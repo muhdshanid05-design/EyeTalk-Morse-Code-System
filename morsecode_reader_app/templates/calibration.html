@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EyeTalk – Intelligent Calibration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{% static 'css/calibration.css' %}">
+</head>
+<body>
+
+<div class="main-wrapper">
+
+    <div class="header">
+        <h1>🧬 EyeTalk Adaptive Calibration</h1>
+        <p>Personalizing Blink Detection Using AI-Based Analysis</p>
+    </div>
+
+    <div class="content-box">
+
+        <div class="instruction-panel">
+            <h2 id="stepTitle">Initializing...</h2>
+            <p id="stepDesc">
+                Camera starting. Please face the screen properly.
+            </p>
+
+            <div class="progress">
+                <div id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="camera-panel">
+            <video id="video" autoplay playsinline></video>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <p>Eye-Controlled Morse Communication System</p>
+        <p>Project Team | Assistive Technology Research</p>
+    </div>
+
+</div>
+
+<script src="{% static 'mediapipe/camera_utils.js' %}"></script>
+<script src="{% static 'mediapipe/face_mesh.js' %}"></script>
+<script src="{% static 'js/calibration.js' %}"></script>
+
+</body>
+</html>

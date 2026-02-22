@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EyeTalk Settings</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" type="text/css" href="{% static 'css/user_settings.css' %}">
+</head>
+
+<body>
+
+{% if not guardian_mode %}
+<button class="back-btn" onclick="window.location.href='/user_dashboard/'">
+  ← Back
+</button>
+
+{% else %}
+
+<button class="back-btn" onclick="window.location.href='/guardian_dashboard/'">
+  ← Back
+</button>
+{% endif %}
+<div class="box">
+<h1>⚙️ EyeTalk Settings</h1>
+
+<label>Short Blink (ms)
+<span class="value" id="shortVal"></span>
+</label>
+<input type="range" min="100" max="1000" step="50" id="short">
+
+<label>Medium Blink (ms)
+<span class="value" id="mediumVal"></span>
+</label>
+<input type="range" min="400" max="1000" step="50" id="medium">
+
+<label>Long Blink (ms)
+<span class="value" id="longVal"></span>
+</label>
+<input type="range" min="900" max="2000" step="50" id="long">
+
+<label>Extra Long Blink (ms)
+<span class="value" id="extraVal"></span>
+</label>
+<input type="range" min="1500" max="3000" step="100" id="extra">
+
+<label>Letter Gap (ms)
+<span class="value" id="pauseVal"></span>
+</label>
+<input type="range" min="800" max="3000" step="100" id="pause">
+
+<label>Word Gap (ms)
+  <span class="value" id="wordGapVal"></span>
+</label>
+<input type="range" id="wordGap" min="1500" max="4000">
+
+
+
+
+<label>Blink Sensitivity (EAR)
+<span class="value" id="earVal"></span>
+</label>
+<input type="range" min="0.15" max="0.30" step="0.01" id="ear">
+
+<div class="toggle">
+  <span>Enable Eye Control</span>
+  <input type="checkbox" id="enableEye">
+</div>
+
+<div class="toggle">
+  <span>Enable SOS</span>
+  <input type="checkbox" id="enableSOS">
+</div>
+
+
+
+<div class="toggle">
+  <span>Facial Mouse Control</span>
+  <input type="checkbox" id="facialMouse">
+</div>
+<button onclick="return confirm('Are you sure?') && saveSettings();">Save Settings</button>
+<button class="reset-btn" onclick="return confirm('Are you sure?') && resetSettings();">Reset</button>
+
+{% if not guardian_mode %}
+<button class="reset-btn" onclick="window.location.href='{% url 'calibration_page' %}'">
+  Auto Calibration
+</button>
+{% endif %}
+
+</div>
+{% if guardian_mode %}
+<script>
+  const GUARDIAN_MODE = true;
+  const TARGET_USER_ID = {{ target_user.id }};
+</script>
+{% else %}
+<script>
+  const GUARDIAN_MODE = false;
+</script>
+{% endif %}
+
+<script src="{% static 'js/user_settings.js' %}"></script>
+
+</body>
+</html>

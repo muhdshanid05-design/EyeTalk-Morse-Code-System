@@ -1,0 +1,122 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Eye-Controlled Morse Code Reader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="{% static 'css/eyetalk_prog.css' %}">
+</head>
+
+<body>
+
+<button onclick="window.location.href='/user_dashboard/'"
+  style="background:#334155;color:#e6eef8;padding:8px 14px;border:none;border-radius:6px;cursor:pointer;margin-bottom:12px;">
+  ← Back
+</button>
+
+<h1>Eye-Controlled Morse Code Reader</h1>
+
+<div class="container">
+
+  <!-- LEFT PANEL -->
+  <div class="card">
+
+    <h3>Camera</h3>
+    <video id="video" autoplay muted playsinline></video>
+
+    <div class="morse-box">
+      <h3>Morse Input</h3>
+
+      <div class="symbol-row">
+        <strong>Symbols:</strong>
+        <span id="symbolSeq"></span>
+      </div>
+
+      <div style="margin-top:10px;">
+        <strong>Decoded Text:</strong>
+      </div>
+      <div id="decodedText" class="textout"></div>
+
+      <div style="margin-top:12px;">
+        <button id="speakBtn">Speak</button>
+        <button id="saveBtn" class="secondary">Save</button>
+        <button id="deleteBtn" class="secondary">Delete</button>
+        <button id="clearBtn" class="secondary">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="card help-panel">
+
+    <div class="help-section">
+      <h2>How to Use EyeTalk</h2>
+      <ul class="instructions">
+        <li><span class="key">Short Blink</span> → Dot (·)</li>
+        <li><span class="key">Long Blink</span> → Dash (—)</li>
+        <li><span class="key">Pause</span> → Letter completed</li>
+        <li><span class="key">Long Hold</span> → Clear text</li>
+        <li><span class="key">Word Space</span> → Stop blinking 2 sec</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h2>Morse Code Reference</h2>
+
+      <div class="morse-table">
+        <div><b>A</b><span class="morse">·—</span></div>
+        <div><b>B</b><span class="morse">—···</span></div>
+        <div><b>C</b><span class="morse">—·—·</span></div>
+        <div><b>D</b><span class="morse">—··</span></div>
+        <div><b>E</b><span class="morse">·</span></div>
+
+        <div><b>F</b><span class="morse">··—·</span></div>
+        <div><b>G</b><span class="morse">——·</span></div>
+        <div><b>H</b><span class="morse">····</span></div>
+        <div><b>I</b><span class="morse">··</span></div>
+        <div><b>J</b><span class="morse">·———</span></div>
+
+        <div><b>K</b><span class="morse">—·—</span></div>
+        <div><b>L</b><span class="morse">·—··</span></div>
+        <div><b>M</b><span class="morse">——</span></div>
+        <div><b>N</b><span class="morse">—·</span></div>
+        <div><b>O</b><span class="morse">———</span></div>
+
+        <div><b>P</b><span class="morse">·——·</span></div>
+        <div><b>Q</b><span class="morse">——·—</span></div>
+        <div><b>R</b><span class="morse">·—·</span></div>
+        <div><b>S</b><span class="morse">···</span></div>
+        <div><b>T</b><span class="morse">—</span></div>
+
+        <div><b>U</b><span class="morse">··—</span></div>
+        <div><b>V</b><span class="morse">···—</span></div>
+        <div><b>W</b><span class="morse">·——</span></div>
+        <div><b>X</b><span class="morse">—··—</span></div>
+        <div><b>Y</b><span class="morse">—·——</span></div>
+
+        <div><b>Z</b><span class="morse">——··</span></div>
+
+        <div><b>0</b><span class="morse">—————</span></div>
+        <div><b>1</b><span class="morse">·————</span></div>
+        <div><b>2</b><span class="morse">··———</span></div>
+        <div><b>3</b><span class="morse">···——</span></div>
+        <div><b>4</b><span class="morse">····—</span></div>
+
+        <div><b>5</b><span class="morse">·····</span></div>
+        <div><b>6</b><span class="morse">—····</span></div>
+        <div><b>7</b><span class="morse">——···</span></div>
+        <div><b>8</b><span class="morse">———··</span></div>
+        <div><b>9</b><span class="morse">————·</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="{% static 'mediapipe/camera_utils.js' %}"></script>
+<script src="{% static 'mediapipe/face_mesh.js' %}"></script>
+<script src="{% static 'js/eyetalk_prog.js' %}"></script>
+
+</body>
+</html>

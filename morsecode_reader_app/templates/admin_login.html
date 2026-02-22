@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login & Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/admin_login_register_style.css' %}">
+</head>
+
+<body>
+
+<div class="container {% if show_register %}active{% endif %}">
+    
+    <div class="curved-shape"></div>
+    <div class="curved-shape2"></div>
+
+    {% if messages %}
+    <div class="message-box">
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ---------------- ADMIN LOGIN ---------------- -->
+    <div class="form-box Login">
+        <h2 class="animation" style="--D:0; --S:21">Admin Login</h2>
+
+        <form method="post" action="{% url 'admin_login' %}">
+            {% csrf_token %}
+
+            <div class="input-box animation" style="--D:1; --S:22">
+                <input type="email" name="email" required>
+                <label>Email</label>
+                <box-icon type="solid" name="user" color="gray"></box-icon>
+            </div>
+
+            <div class="input-box animation" style="--D:2; --S:23">
+                <input type="password" id="password" name="password" required>
+                <label for="">Password</label>
+                 <box-icon id="loginTogglePassword" name="lock-alt" type="solid" color="gray" cursor="pointer"></box-icon>
+            </div>
+
+            <div class="input-box animation" style="--D:3; --S:24">
+                <button class="btn" type="submit">Login</button>
+            </div>
+        
+        </form>
+    </div>
+    
+    <div class="info-content Login">
+        <h2 class="animation" style="--D:0; --S:20">ADMIN PORTAL</h2>
+        <p class="animation" style="--D:1; --S:21">
+            Secure access to the admin dashboard and controls.
+        </p>
+    </div>
+
+ 
+
+    
+
+</div>
+
+<script src="{% static 'js/admin_login_register.js' %}"></script>
+<script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+
+</body>
+</html>

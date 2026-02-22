@@ -1,0 +1,330 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EyeTalk | Guardian User Directory</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+
+/* ================= GLOBAL ================= */
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:linear-gradient(135deg,#071022,#0f1724);
+  color:white;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* Animated background glow */
+body::before{
+  content:"";
+  position:fixed;
+  width:500px;
+  height:500px;
+  background:radial-gradient(circle,#66f0ff30,transparent 70%);
+  top:-150px;
+  right:-150px;
+  animation:floatGlow 10s ease-in-out infinite alternate;
+  z-index:-1;
+}
+
+@keyframes floatGlow{
+  from{transform:translateY(0);}
+  to{transform:translateY(40px);}
+}
+
+/* ================= HEADER ================= */
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:25px 40px;
+}
+
+.brand{
+  font-family:'Orbitron',sans-serif;
+  font-size:28px;
+  background:linear-gradient(45deg,#66f0ff,#9b7bff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.tagline{
+  font-size:14px;
+  opacity:0.6;
+}
+
+/* ================= BUTTONS ================= */
+
+.btn, .btn-add, .btn-again{
+  padding:10px 18px;
+  border-radius:30px;
+  text-decoration:none;
+  font-weight:600;
+  transition:0.3s;
+  font-size:14px;
+}
+
+.btn-add{
+  background:linear-gradient(45deg,#66f0ff,#9b7bff);
+  color:#001;
+}
+
+.btn-add:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 25px rgba(102,240,255,0.4);
+}
+
+.back{
+  color:#66f0ff;
+  margin-left:15px;
+  text-decoration:none;
+  font-weight:600;
+}
+
+.back:hover{
+  text-decoration:underline;
+}
+
+/* ================= SEARCH ================= */
+
+.search{
+  padding:10px 15px;
+  border-radius:30px;
+  border:none;
+  outline:none;
+  width:250px;
+  background:rgba(255,255,255,0.05);
+  color:white;
+  margin-right:15px;
+  transition:0.3s;
+}
+
+.search:focus{
+  box-shadow:0 0 15px rgba(102,240,255,0.5);
+}
+
+/* ================= TABLE ================= */
+
+.container{
+  padding:20px 40px;
+}
+
+.table-wrap{
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  border-radius:20px;
+  padding:25px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.4);
+  animation:fadeUp 0.6s ease forwards;
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.user-table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.user-table th{
+  text-align:left;
+  padding:15px;
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:#66f0ff;
+}
+
+.user-table td{
+  padding:15px;
+  border-top:1px solid rgba(255,255,255,0.05);
+}
+
+.user-row{
+  transition:0.3s;
+}
+
+.user-row:hover{
+  background:rgba(102,240,255,0.08);
+  transform:scale(1.01);
+}
+
+/* ================= AVATAR ================= */
+
+.avatar{
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid #66f0ff;
+  transition:0.3s;
+}
+
+.avatar:hover{
+  transform:scale(1.1);
+}
+
+/* ================= BADGES ================= */
+
+.badge{
+  padding:6px 14px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:600;
+}
+
+.pending{
+  background:#ffb86b;
+  color:black;
+}
+
+.approved{
+  background:#22c55e;
+  color:black;
+}
+
+.btn-again{
+  background:#ef4444;
+  color:white;
+}
+
+.btn{
+  background:#3b82f6;
+  color:white;
+}
+
+/* ================= FOOTER ================= */
+
+.footer{
+  text-align:center;
+  padding:20px;
+  font-size:13px;
+  opacity:0.6;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:768px){
+  .topbar{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .search{
+    width:100%;
+    margin-bottom:10px;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div>
+    <h1 class="brand">EyeTalk Guardian Directory</h1>
+    <p class="tagline">Manage user communication access</p>
+  </div>
+
+  <div>
+    <input id="searchInput" class="search" type="search"
+           placeholder="Search name, username, email...">
+
+    <a href="/register/?from_guardian=1" class="btn-add">➕ Add New User</a>
+    <a class="back" href="/guardian_dashboard/">← Back</a>
+  </div>
+</header>
+
+<main class="container">
+
+<div class="table-wrap">
+<table class="user-table">
+<thead>
+<tr>
+<th>Full Name</th>
+<th>Username</th>
+<th>Image</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="userTableBody">
+{% for user in users %}
+<tr class="user-row">
+<td>{{ user.fullname }}</td>
+<td>{{ user.username }}</td>
+
+<td>
+{% if user.image %}
+<img class="avatar" src="{{ user.image.url }}">
+{% else %}
+<img class="avatar" src="{% static 'images/profile icon.jpg' %}">
+{% endif %}
+</td>
+
+<td>
+{% if user.guardian_status == 'pending' %}
+<span class="badge pending">Requested</span>
+
+{% elif user.guardian_status == 'approved' %}
+<span class="badge approved">Approved</span>
+
+{% elif user.guardian_status == 'rejected' %}
+<a href="{% url 'request_user_access' user.id %}" class="btn-again">
+Request Again
+</a>
+
+{% else %}
+<a href="{% url 'request_user_access' user.id %}" class="btn">
+Request Access
+</a>
+{% endif %}
+</td>
+
+</tr>
+{% empty %}
+<tr>
+<td colspan="4">No users found</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+</main>
+
+<footer class="footer">
+Made with ♥ — EyeTalk Assistive Communication System
+</footer>
+
+<script>
+/* ===== LIVE SEARCH FILTER ===== */
+
+document.getElementById("searchInput").addEventListener("keyup", function(){
+  const value = this.value.toLowerCase();
+  const rows = document.querySelectorAll(".user-row");
+
+  rows.forEach(row=>{
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(value) ? "" : "none";
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<title>User Messages | EyeTalk</title>
+
+<style>
+body{
+  background:#0f1724;
+  color:#ffffff;
+  font-family:'Segoe UI', Arial, sans-serif;
+  padding:30px;
+}
+
+/* HEADER SECTION */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:25px;
+}
+
+/* BACK BUTTON */
+.back-btn{
+  background:#334155;
+  color:#fff;
+  padding:6px 14px;
+  border-radius:6px;
+  text-decoration:none;
+  font-size:14px;
+  transition:0.3s;
+}
+.back-btn:hover{
+  background:#475569;
+}
+
+/* TITLE */
+h2{
+  color:#66f0ff;
+  margin-bottom:20px;
+}
+
+/* HIGH SCORE */
+.highscore-pill{
+  background:linear-gradient(145deg,#0f1724,#1e293b);
+  padding:8px 18px;
+  border-radius:25px;
+  border:1px solid #66f0ff;
+  font-size:14px;
+  color:#66f0ff;
+  font-weight:600;
+  box-shadow:0 0 10px rgba(102,240,255,0.25);
+}
+
+/* MESSAGE CARD */
+.card{
+  background:rgba(255,255,255,0.05);
+  padding:20px;
+  border-radius:14px;
+  margin-bottom:18px;
+  border:1px solid rgba(255,255,255,0.08);
+  transition:0.3s;
+}
+
+.card:hover{
+  background:rgba(255,255,255,0.08);
+  transform:translateY(-3px);
+}
+
+.card p{
+  margin:0 0 10px 0;
+  font-size:15px;
+  line-height:1.6;
+}
+
+/* META SECTION (DATE + DELETE) */
+.meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:12px;
+}
+
+/* DATE */
+.time{
+  font-size:12px;
+  color:#94a3b8;
+  letter-spacing:0.5px;
+}
+
+/* DELETE BUTTON */
+.delete-btn{
+  background:rgba(255,99,99,0.1);
+  color:#ff6b6b;
+  padding:4px 10px;
+  border-radius:6px;
+  font-size:12px;
+  text-decoration:none;
+  transition:0.3s;
+  border:1px solid rgba(255,99,99,0.3);
+}
+
+.delete-btn:hover{
+  background:#ff6b6b;
+  color:#fff;
+  box-shadow:0 0 8px rgba(255,107,107,0.5);
+}
+
+/* EMPTY STATE */
+.empty{
+  opacity:0.7;
+  margin-top:20px;
+  font-style:italic;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <a href="/guardian_dashboard/" class="back-btn">← Back</a>
+
+    <div class="highscore-pill">
+        🎮 High Score: {{ high_score }}
+    </div>
+</div>
+
+<h2>Messages of {{ target_user.fullname }}</h2>
+
+{% for msg in messages %}
+    <div class="card">
+        <p>{{ msg.text }}</p>
+
+        <div class="meta">
+            <div class="time">
+                {{ msg.created_at|date:"d M Y • h:i A" }}
+            </div>
+
+            <a href="/guardian/delete-message/{{ msg.id }}/"
+               onclick="return confirm('Delete this message?')"
+               class="delete-btn">
+               🗑 Delete
+            </a>
+        </div>
+    </div>
+{% empty %}
+  <p class="empty">No messages yet.</p>
+{% endfor %}
+
+</body>
+</html>

@@ -1,0 +1,249 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Child Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="{% static 'css/profile_edit.css' %}">
+
+  <style>
+    /* -------- Layout -------- */
+    .profile-card {
+      grid-template-columns: 1fr !important;
+    }
+
+    .right-col {
+      padding-left: 0;
+    }
+
+    /* -------- Header (TITLE LEFT, BACK RIGHT) -------- */
+    .page-header{
+      display: flex;
+      align-items: center;
+      justify-content: space-between; /* 👈 key */
+      margin-bottom: 24px;
+    }
+
+    .page-title{
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .back-btn{
+      font-size: 14px;
+      text-decoration: none;
+      opacity: 0.85;
+      position: static !important; /* override profile_edit.css */
+      white-space: nowrap;
+    }
+
+    .back-btn:hover{
+      opacity: 1;
+    }
+
+    /* -------- Form -------- */
+    .verify-form {
+      display: grid;
+      gap: 18px;
+      animation: fadeSlideIn 0.7s ease;
+    }
+
+    .verify-form input,
+    .verify-form select,
+    .verify-form textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      resize: none;
+    }
+
+    .verify-form textarea {
+      min-height: 100px;
+    }
+
+    /* -------- Buttons -------- */
+    .form-actions {
+      display: flex;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .submit-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 14px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #000;
+    }
+
+    .cancel-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 14px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #ff5f6d, #ff3b3b);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* -------- Glass Modals -------- */
+    .glass-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .glass-box {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 30px;
+      width: 320px;
+      text-align: center;
+      color: #fff;
+      animation: popIn 0.35s ease;
+    }
+
+    .checkmark {
+      width: 60px;
+      height: 60px;
+      margin: auto;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+
+    .success { background: linear-gradient(135deg, #4ade80, #22c55e); }
+    .danger  { background: linear-gradient(135deg, #ff5f6d, #ff3b3b); }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 15px;
+    }
+
+    .glass-box button {
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="wrap">
+  <div class="profile-card">
+    <div class="right-col">
+
+      <!-- HEADER -->
+      <div class="page-header">
+        <h3 class="page-title">Request Child Access</h3>
+        <a class="back-btn" href="/guardian_home/">← Back</a>
+      </div>
+
+      <!-- FORM -->
+      <form method="post"
+            enctype="multipart/form-data"
+            class="verify-form"
+            onsubmit="return showSuccessModal();">
+        {% csrf_token %}
+
+        <select name="relation" required>
+          <option value="">Relationship</option>
+          <option>Father</option>
+          <option>Mother</option>
+          <option>other</option>
+        </select>
+
+        <input type="date" name="child_dob" required>
+
+        <input type="email" name="child_email" placeholder="Child email" required>
+
+        <textarea name="child_address" placeholder="Child address" ></textarea>
+
+        <textarea name="reason" placeholder="Reason" required></textarea>
+       
+        <input type="file" name="proof_image" required>
+
+        <div class="form-actions">
+          <button type="submit" class="submit-btn">Submit</button>
+          <button type="button" class="cancel-btn" onclick="showCancelModal()">Cancel</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div id="successModal" class="glass-modal">
+  <div class="glass-box">
+    <div class="checkmark success">✔</div>
+    <h3>Submitted</h3>
+    <p>Your request is pending approval.</p>
+  </div>
+</div>
+
+<!-- CANCEL MODAL -->
+<div id="cancelModal" class="glass-modal">
+  <div class="glass-box">
+    <div class="checkmark danger">✖</div>
+    <h3>Cancel Request?</h3>
+    <p>Are you sure you want to cancel?</p>
+
+    <div class="btn-row">
+      <button onclick="confirmCancel()">Yes</button>
+      <button onclick="closeCancel()">No</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showSuccessModal() {
+    document.getElementById("successModal").style.display = "flex";
+    setTimeout(() => {
+      document.querySelector(".verify-form").submit();
+    }, 1200);
+    return false;
+  }
+
+  function showCancelModal() {
+    document.getElementById("cancelModal").style.display = "flex";
+  }
+
+  function closeCancel() {
+    document.getElementById("cancelModal").style.display = "none";
+  }
+
+  function confirmCancel() {
+    window.location.href = "/grd_view_userlist/";
+  }
+</script>
+
+</body>
+</html>

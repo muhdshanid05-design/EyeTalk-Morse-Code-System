@@ -1,0 +1,308 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Guardian Directory</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  background:#0f1724;
+  color:#fff;
+  font-family:Arial, sans-serif;
+  padding:25px;
+}
+
+/* ---------- TOP BAR ---------- */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.search{
+  padding:8px 12px;
+  border-radius:8px;
+  border:none;
+  width:260px;
+}
+
+.back{
+  margin-left:10px;
+  text-decoration:none;
+  color:#66f0ff;
+}
+
+/* ---------- GUARDIAN CARD ---------- */
+.card{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:14px;
+  transition:.3s;
+}
+
+.card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+  cursor:pointer;
+}
+
+.guardian-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.guardian-left{
+  display:flex;
+  gap:15px;
+  align-items:center;
+}
+
+.guardian-name{
+  font-size:18px;
+  font-weight:bold;
+  color:#ffb86b;
+}
+
+.meta{
+  font-size:13px;
+  opacity:.8;
+}
+
+/* ---------- USERS ---------- */
+.users{
+  margin-top:15px;
+  display:none;
+}
+
+.user{
+  background:rgba(255,255,255,0.05);
+  padding:12px;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+.user-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.user-left{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+.username{
+  color:#66f0ff;
+  font-size:13px;
+}
+
+.severity{
+  display:inline-block;
+  padding:3px 8px;
+  border-radius:12px;
+  font-size:12px;
+  margin-top:4px;
+}
+.severity.paraplegia{background:#f97316;}
+.severity.quadriplegia{background:#ef4444;}
+.severity.hemiplegia{background:#eab308;color:#000;}
+.severity.partial{background:#22c55e;color:#000;}
+.severity.temporary{background:#38bdf8;color:#000;}
+.severity.other{background:#a855f7;}
+
+/* ---------- ANALYTICS ---------- */
+.analytics{
+  display:none;
+  margin-top:8px;
+  padding:8px;
+  background:rgba(0,0,0,.35);
+  border-radius:10px;
+}
+
+.analytics-inner{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+/* ---------- BUTTONS ---------- */
+.btn{
+  padding:6px 10px;
+  border-radius:6px;
+  font-size:13px;
+  cursor:pointer;
+  text-decoration:none;
+}
+
+.btn-disconnect{background:#ef4444;color:#fff;}
+.btn-reconnect{background:#22c55e;color:#000;}
+.btn-verify{background:#38bdf8;color:#000;}
+</style>
+
+<script>
+/* search */
+function searchGuardian(){
+  const q=document.getElementById("search").value.toLowerCase();
+  document.querySelectorAll(".card").forEach(c=>{
+    c.style.display = c.innerText.toLowerCase().includes(q) ? "block":"none";
+  });
+}
+
+/* accordion */
+function toggleUsers(id){
+  const el=document.getElementById("users-"+id);
+  el.style.display = el.style.display==="block"?"none":"block";
+}
+
+/* analytics + small doughnut graph */
+function toggleAnalytics(e,id){
+  e.stopPropagation();
+  const el=document.getElementById("ana-"+id);
+  el.style.display = el.style.display==="block"?"none":"block";
+
+  if(!el.dataset.loaded){
+    const ctx=document.getElementById("chart-"+id).getContext("2d");
+    new Chart(ctx,{
+      type:'doughnut',
+      data:{
+        labels:['Active','Idle'],
+        datasets:[{
+          data:[65,35],
+          backgroundColor:['#4f9cff','#1f2933'],
+          borderWidth:0
+        }]
+      },
+      options:{
+        responsive:false,
+        cutout:'75%',
+        plugins:{ legend:{display:false}, tooltip:{enabled:false} }
+      }
+    });
+    el.dataset.loaded="1";
+  }
+}
+
+/* disconnect / reconnect UI only */
+function disconnectUI(e,id){
+  e.stopPropagation();
+  sessionStorage.setItem("pending_disconnect_"+id,"1");
+  document.getElementById("disc-"+id).style.display="none";
+  document.getElementById("recon-"+id).style.display="inline-block";
+}
+
+function reconnectUI(e,id){
+  e.stopPropagation();
+  sessionStorage.removeItem("pending_disconnect_"+id);
+  document.getElementById("recon-"+id).style.display="none";
+  document.getElementById("disc-"+id).style.display="inline-block";
+}
+
+/* DB commit only on refresh */
+document.addEventListener("DOMContentLoaded",()=>{
+  Object.keys(sessionStorage).forEach(k=>{
+    if(k.startsWith("pending_disconnect_")){
+      fetch(`/guardian/disconnect/${k.replace("pending_disconnect_","")}/`);
+      sessionStorage.removeItem(k);
+    }
+  });
+});
+</script>
+</head>
+
+<body>
+
+<div class="topbar">
+  <div>
+    <a class="back" href="/adminhome/">← Back</a>
+    <input id="search" class="search" placeholder="Search guardian..." onkeyup="searchGuardian()">
+    
+  </div>
+</div>
+
+{% for g in guardians %}
+<div class="card" onclick="toggleUsers({{ g.id }})">
+
+  <div class="guardian-header">
+    <div class="guardian-left">
+      <img src="{% if g.image %}{{ g.image.url }}{% else %}{% static 'images/profile icon.jpg' %}{% endif %}"
+           style="width:55px;height:55px;border-radius:50%;">
+      <div>
+        <div class="guardian-name">{{ g.fullname }}</div>
+        <div class="meta" style="font-size:13px;opacity:.85;color:#66f0ff;">
+           @ {{ g.username }}
+        </div>
+        <div class="meta">{{ g.email }}</div>
+        <div class="meta">📞 {{ g.phone }}</div>
+        <div class="meta">📍 {{ g.address }}</div>
+       
+        <div class="meta">Connected Users: {{ g.connected_users|length }}</div>
+      </div>
+    </div>
+
+    <!-- ONLY VERIFY WHEN PENDING -->
+    <div>
+      {% if g.request_status == 'pending' %}
+        <a href="{% url 'admin_verify_guardian_request' g.request_id %}"
+           class="btn btn-verify">Verify</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="users" id="users-{{ g.id }}">
+    {% for req in g.connected_users %}
+    <div class="user" onclick="toggleAnalytics(event,{{ req.id }})">
+
+      <div class="user-row">
+        <div class="user-left">
+          <img src="{% if req.user.image %}{{ req.user.image.url }}{% else %}{% static 'images/profile icon.jpg' %}{% endif %}"
+               style="width:42px;height:42px;border-radius:50%;">
+          <div>
+            <b>{{ req.user.fullname }}</b><br>
+            <span class="username">@{{ req.user.username }}</span><br>
+            <span style="font-size:13px">{{ req.user.email }}</span><br>
+            <span class="severity {{ req.user.health_condition }}">
+              {{ req.user.health_condition|capfirst }}
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <a id="disc-{{ req.id }}" class="btn btn-disconnect"
+             onclick="disconnectUI(event,{{ req.id }})">Disconnect</a>
+          <a id="recon-{{ req.id }}" class="btn btn-reconnect"
+             style="display:none"
+             onclick="reconnectUI(event,{{ req.id }})">Reconnect</a>
+        </div>
+      </div>
+
+      <!-- SMALL GRAPH (ROW SIZE) -->
+      <div class="analytics" id="ana-{{ req.id }}">
+        <div class="analytics-inner">
+          <canvas id="chart-{{ req.id }}" width="65" height="65"></canvas>
+          <div style="font-size:13px;opacity:.85;">
+            <div><b>Connected:</b> {{ req.created_at|date:"d M Y" }}</div>
+            <div><b>Activity:</b> Medium</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    {% empty %}
+      <p style="opacity:.6">No connected users</p>
+    {% endfor %}
+  </div>
+
+</div>
+{% endfor %}
+
+</body>
+</html>

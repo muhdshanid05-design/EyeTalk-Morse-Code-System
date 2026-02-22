@@ -1,0 +1,150 @@
+:root{
+  --bg:#0f172a;
+  --card-bg:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.08);
+
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+
+  --yellow:#facc15;
+  --green:#22c55e;
+  --red:#ef4444;
+
+  --radius:14px;
+}
+
+/* Base */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* Layout */
+.page-wrap{
+  max-width:1200px;
+  margin:auto;
+  padding:20px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.brand{
+  font-size:1.6rem;
+}
+
+.tagline{
+  color:var(--muted);
+  font-size:.9rem;
+}
+
+.search{
+  padding:8px 12px;
+  border-radius:20px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--text);
+}
+
+.back{
+  margin-left:12px;
+  text-decoration:none;
+  color:var(--yellow);
+}
+
+/* Table */
+.table-wrap{
+  overflow-x:auto;
+}
+
+.user-table{
+  width:100%;
+  border-collapse:collapse;
+  background:var(--card-bg);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+
+.user-table th,
+.user-table td{
+  padding:14px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+}
+
+.user-table th{
+  font-size:.85rem;
+  color:var(--muted);
+}
+
+.user-row:hover{
+  background:rgba(255,255,255,0.03);
+}
+
+/* Avatar */
+.avatar{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+/* Buttons */
+.btn{
+  padding:6px 14px;
+  border-radius:20px;
+  border:1px solid;
+  text-decoration:none;
+  font-size:.85rem;
+  display:inline-block;
+}
+
+.btn-verify{
+  color:var(--yellow);
+  border-color:rgba(250,204,21,.4);
+}
+
+.btn-verify:hover{
+  background:rgba(250,204,21,.1);
+}
+
+/* Status */
+.status{
+  font-weight:600;
+  font-size:.85rem;
+}
+
+.status.pending{
+  color:var(--yellow);
+}
+
+.status.approved{
+  color:var(--green);
+}
+
+.status.rejected{
+  color:var(--red);
+}
+
+.text-muted{
+  color:var(--muted);
+}
+
+/* Footer */
+.footer{
+  margin-top:30px;
+  text-align:center;
+  color:var(--muted);
+  font-size:.8rem;
+}

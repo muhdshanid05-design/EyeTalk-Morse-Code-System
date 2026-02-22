@@ -1,0 +1,274 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EyeTalk Learning – Tutorial</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- MediaPipe REQUIRED for eye_universal.js -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#0f1724;
+    color:#ffffff;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    padding:30px;
+}
+
+h1,h2,h3{
+    color:#66f0ff;
+}
+
+.section{
+    background:rgba(255,255,255,0.05);
+    padding:25px;
+    border-radius:16px;
+    margin-bottom:25px;
+    border:1px solid rgba(255,255,255,0.1);
+}
+
+.code-box{
+    background:#071022;
+    padding:15px;
+    border-radius:10px;
+    margin-top:10px;
+    font-size:18px;
+}
+
+.morse-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:12px;
+    margin-top:15px;
+}
+
+.morse-item{
+    background:rgba(255,255,255,0.08);
+    padding:12px;
+    border-radius:10px;
+    text-align:center;
+}
+
+.btn{
+    display:inline-block;
+    margin-top:20px;
+    padding:14px 26px;
+    background:#66f0ff;
+    color:#012;
+    font-weight:bold;
+    border-radius:10px;
+    text-decoration:none;
+}
+
+.note{
+    font-size:14px;
+    opacity:0.8;
+}
+
+
+.back-btn{
+  position:relative;
+  background:#334155;
+  color:#e6eef8;
+
+  padding:6px 12px;          /* 👈 smaller */
+  border:1px solid #475569;
+  border-radius:6px;
+
+  font-size:13px;            /* 👈 smaller text */
+  font-weight:500;
+
+  cursor:pointer;
+  margin:10px 0;
+
+  width:auto;                /* ⭐ IMPORTANT */
+  display:inline-block;      /* ⭐ IMPORTANT */
+}
+
+.back-btn:hover{
+  background:#475569;
+  color:#ffffff;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body data-eye-mode="learning">
+
+<button class="back-btn" onclick="window.location.href='/user_dashboard/'">
+  ← Back
+</button>
+<div class="container">
+
+<h1>📘 EyeTalk Learning – Morse Code Tutorial</h1>
+<p>This tutorial helps you learn Morse code step by step using eye movements.</p>
+
+<!-- SECTION 1 -->
+<div class="section">
+<h2>1️⃣ What is Morse Code?</h2>
+<p>
+Morse code is a communication system that represents letters and numbers using
+<strong>dots (.)</strong> and <strong>dashes (-)</strong>.
+</p>
+<p>
+In EyeTalk, Morse code is generated using <strong>eye blinks</strong>.
+</p>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+<h2>2️⃣ Dot and Dash</h2>
+
+<div class="code-box">
+<strong>Dot ( . )</strong> → Short eye blink  
+</div>
+
+<div class="code-box">
+<strong>Dash ( - )</strong> → Long eye blink  
+</div>
+
+<p class="note">
+Short blink = less time, Long blink = more time
+</p>
+</div>
+
+<!-- SECTION 3 -->
+<div class="section">
+<h2>3️⃣ Eye Blink Mapping</h2>
+<ul>
+<li>👁️ Short Blink → Dot (.)</li>
+<li>👁️ Long Blink → Dash (-)</li>
+<li>⏸️ Pause → Letter completed</li>
+<li>👁️👁️ Very long blink → Clear text</li>
+</ul>
+</div>
+
+<!-- SECTION 4 -->
+<div class="section">
+<h2>4️⃣ Alphabets (A – Z)</h2>
+
+<div class="morse-grid">
+<div class="morse-item"><b>A</b><br>· —</div>
+<div class="morse-item"><b>B</b><br>— · · ·</div>
+<div class="morse-item"><b>C</b><br>— · — ·</div>
+<div class="morse-item"><b>D</b><br>— · ·</div>
+<div class="morse-item"><b>E</b><br>· </div>
+<div class="morse-item"><b>F</b><br>· · — ·</div>
+<div class="morse-item"><b>G</b><br>— — ·</div>
+<div class="morse-item"><b>H</b><br>· · · ·</div>
+<div class="morse-item"><b>I</b><br>· ·</div>
+<div class="morse-item"><b>J</b><br>· — — —</div>
+<div class="morse-item"><b>K</b><br>— · —</div>
+<div class="morse-item"><b>L</b><br>· — · ·</div>
+<div class="morse-item"><b>M</b><br>— —</div>
+<div class="morse-item"><b>N</b><br>— · </div>
+<div class="morse-item"><b>O</b><br>— — —</div>
+<div class="morse-item"><b>P</b><br>· — — ·</div>
+<div class="morse-item"><b>Q</b><br>— — · —</div>
+<div class="morse-item"><b>R</b><br>· — ·</div>
+<div class="morse-item"><b>S</b><br>· · ·</div>
+<div class="morse-item"><b>T</b><br>—</div>
+<div class="morse-item"><b>U</b><br>· · —</div>
+<div class="morse-item"><b>V</b><br>· · · —</div>
+<div class="morse-item"><b>W</b><br>· — —</div>
+<div class="morse-item"><b>X</b><br>— ·· —</div>
+<div class="morse-item"><b>Y</b><br>— · — —</div>
+<div class="morse-item"><b>Z</b><br>— — · ·</div>
+
+</div>
+
+<p class="note">Remaining letters follow the same pattern.</p>
+</div>
+
+<!-- SECTION 5 -->
+<div class="section">
+<h2>5️⃣ Numbers (0 – 9)</h2>
+
+<div class="morse-grid">
+<div class="morse-item">1<br>. - - - -</div>
+<div class="morse-item">2<br>. . - - -</div>
+<div class="morse-item">3<br>. . . - -</div>
+<div class="morse-item">4<br>. . . . -</div>
+<div class="morse-item">5<br>. . . . .</div>
+<div class="morse-item">6<br>- . . . .</div>
+<div class="morse-item">7<br>- - . . .</div>
+<div class="morse-item">8<br>- - - . .</div>
+<div class="morse-item">9<br>- - - - .</div>
+<div class="morse-item">0<br>- - - - -</div>
+</div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="section">
+<h2>6️⃣ Example Practice</h2>
+
+<p><strong>Word:</strong> HI</p>
+<div class="code-box">
+H → . . . .  
+<br>
+I → . .
+</div>
+
+<p><strong>Word:</strong> SOS</p>
+<div class="code-box">
+S → . . .  
+<br>
+O → - - -  
+<br>
+S → . . .
+</div>
+</div>
+
+
+<!-- SECTION 7
+<div class="section">
+<h2>🎮 Ready to Practice?</h2>
+<p>
+Now you can practice Morse code using a simple game mode.
+</p>
+
+<a href="/learning_game/" class="btn">Start Game Mode</a>
+</div>
+
+</div>
+
+ -->
+
+<!-- UNIVERSAL EYE OVERLAY -->
+<div style="position:fixed; bottom:10px; right:10px; z-index:9999;">
+  <video id="eyeVideo"
+         autoplay
+         muted
+         playsinline
+         style="width:160px; height:120px; border:2px solid #334155; border-radius:8px;">
+  </video>
+  <div id="eyeStatus"
+       style="margin-top:4px; font-size:12px; color:#e5e7eb;">
+    Eye control active
+  </div>
+</div>
+
+
+<script src="{% static 'js/eye_universal.js' %}"></script>
+
+<script>
+  if (document.body.dataset.eyeMode === "learning") {
+    initUniversalEyeEngine();
+  }
+</script>
+
+
+</body>
+</html>

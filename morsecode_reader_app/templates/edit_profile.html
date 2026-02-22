@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Edit Profile</title>
+
+  <link rel="stylesheet" href="{% static 'css/profile_edit.css' %}">
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="profile-card">
+
+      <!-- Back -->
+      <a class="back-btn" href="/profile/">← Back</a>
+
+      <!-- LEFT COLUMN -->
+      <div class="left-col">
+        <div class="profile-pic" aria-hidden="false">
+          {% if user.image %}
+            <img id="avatarPreview" src="{{ user.image.url }}" alt="{{ admibutton.fullname }} avatar">
+          {% else %}
+            <img id="avatarPreview" src="{% static 'images/profile icon.jpg' %}" alt="avatar placeholder">
+          {% endif %}
+        </div>
+
+        <div class="avatar-meta">
+          <div class="name">{{ user.get_full_name|default:user.username }}</div>
+          <div class="subtitle">{{ user.email }}</div>
+          <a class="edit-icon" href="/profile/">Cancel</a>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-col">
+        <div class="card-head" role="heading" aria-level="2">
+          <h3>Profile Details</h3>
+          <div class="member-since" aria-hidden="true">
+            Member since: {{ user.date_joined|date:"M j, Y" }}
+          </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" id="editProfileForm" novalidate>
+          {% csrf_token %}
+
+          <div class="info-grid">
+            <div class="row">
+              <label for="id_username">User name</label>
+              <input id="id_username" class="input" type="text" name="username" value="{{ user.username }}" required>
+            </div>
+
+            <div class="row">
+              <label for="id_fullname">Full name</label>
+              <input id="id_fullname" class="input" type="text" name="fullname" value="{{ user.fullname }}">
+            </div>
+
+            <div class="row">
+              <label for="id_age">Age</label>
+              <input id="id_age" class="input" type="number" name="age" value="{{ user.age }}">
+            </div>
+
+            <div class="row">
+              <label for="id_phone">Phone</label>
+              <input id="id_phone" class="input" type="text" name="phone" value="{{ user.phone }}">
+            </div>
+
+            <div class="row">
+              <label for="id_gender">Gender</label>
+              <select id="id_gender" class="input" name="gender" aria-label="Gender">
+                <option value="" {% if not user.gender %}selected{% endif %} disabled>Select</option>
+                <option value="male" {% if user.gender == "male" %}selected{% endif %}>Male</option>
+                <option value="female" {% if user.gender == "female" %}selected{% endif %}>Female</option>
+                <option value="other" {% if user.gender == "other" %}selected{% endif %}>Other</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <label for="id_avatar">Avatar (choose file)</label>
+              <input id="id_avatar" class="input" type="file" name="avatar" accept="image/*" aria-describedby="avatarHelp">
+              <small id="avatarHelp" style="color:rgba(255,255,255,0.6)">PNG/JPG, max 2.5MB (server limits apply)</small>
+            </div>
+            <div class="row">
+              <label for="id_health">Health Condition</label>      
+              <div style="display:flex; align-items:center; gap:10px;">
+                <box-icon name="accessibility" type="solid" color="gray"></box-icon>
+                <select id="id_health" class="input" name="health_condition" required>
+                  <option value="" disabled {% if not user.health_condition %}selected{% endif %}>Select condition</option>
+                  <option value="paraplegia" {% if user.health_condition == "paraplegia" %}selected{% endif %}>Paraplegia</option>
+                  <option value="quadriplegia" {% if user.health_condition == "quadriplegia" %}selected{% endif %}>Quadriplegia</option>
+                  <option value="hemiplegia" {% if user.health_condition == "hemiplegia" %}selected{% endif %}>Hemiplegia</option>
+                  <option value="partial_paralysis" {% if user.health_condition == "partial_paralysis" %}selected{% endif %}>Partial Paralysis</option>
+                  <option value="temporary_paralysis" {% if user.health_condition == "temporary_paralysis" %}selected{% endif %}>Temporary Paralysis</option>
+                  <option value="other" {% if user.health_condition == "other" %}selected{% endif %}>Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row full">
+              <label for="id_address">Address</label>
+              <textarea id="id_address" class="input" name="address" rows="3">{{ user.address }}</textarea>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="save-btn" id="saveBtn">Save Changes</button>
+            <button class="btn save-btn" href="/profile/">Cancel</button>
+          </div>
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="{% static 'js/profile_edit.js' %}"></script>
+</body>
+</html>

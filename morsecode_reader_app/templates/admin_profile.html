@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ user.name }} — Profile</title>
+  <link rel="stylesheet" href="{% static 'css/profile_edit.css' %}">
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="profile-card">
+
+      <!-- Back -->
+      <a class="back-btn" href="/adminhome/">← Back</a>
+
+      <!-- LEFT COLUMN -->
+      <div class="left-col">
+        <div class="profile-pic">
+          <!-- swap below src to: {{ request.user.profile.avatar.url }} if you store avatars -->
+          <img src="{% if admin.image %}{{ admin.image.url }}{% else %}{% static 'images/profile icon.jpg' %}{% endif %}" alt="Profile Photo">
+        </div>
+
+        <div class="avatar-meta">
+          <div class="name">{{ admin.username }}</div>
+          <div class="subtitle">{{ admin.email }}</div>
+          <a class="edit-icon" href="/admin_edit_profile/">Edit</a>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-col">
+        <div class="card-head">
+          <h3>Profile Details</h3>
+          <div style="color: rgba(255,255,255,0.65); font-size:13px;">Member since: {{ admin.date_joined|date:"M j, Y" }}</div>
+        </div>
+
+        <p class="bio">A little about you — use this space to show a brief personal summary or status. You can edit it from the <strong>Edit</strong> screen.</p>
+
+        <div class="info-grid">
+          <div class="row">
+            <label>Full name</label>
+            <div class="value">{{ admin.fullname }}</div>
+          </div>
+
+          <div class="row">
+            <label>Age</label>
+            <div class="value">{{ admin.age }}</div>
+          </div>
+
+          <div class="row">
+            <label>Phone</label>
+            <div class="value">{{ admin.phone }}</div>
+          </div>
+
+          <div class="row">
+            <label>Gender</label>
+            <div class="value">
+              {% if admin.gender == 'male' %}Male
+              {% elif admin.gender == 'female' %}Female
+              {% else %}Other
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="row full">
+            <label>Address</label>
+            <div class="value">{{ admin.address }}</div>
+          </div>
+          
+        </div>
+
+        <div class="actions">
+          <a class="btn save-btn"  href="/admin_edit_profile/">Edit Profile </a>
+          <button class="btn save-btn" href="/logout/" onclick="return confirm('Are you sure?');">logout</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <script src="{% static 'js/profile_edit.js' %}"></script>
+</body>
+</html>

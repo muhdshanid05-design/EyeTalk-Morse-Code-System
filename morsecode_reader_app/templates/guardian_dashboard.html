@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Guardian — User Monitoring</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- EXISTING CSS (animations, glass UI) -->
+  <link rel="stylesheet" href="{% static 'css/guardian.css' %}">
+</head>
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+<aside class="sidebar">
+
+
+  <!-- 🔙 BACK BUTTON -->
+  <div class="back-container">
+    <button class="back-btn" onclick="window.location.href='/guardian_home/'">
+      ⬅ Back
+    </button>
+  
+    <br><br><br>
+  </div>
+  <h2 class="logo">Guardian</h2>
+  <br>
+  
+  <ul class="menu">
+    <li class="active">Monitor</li>
+    <li onclick="location.href='/grd_view_userlist/'">Users</li>
+    <li onclick="location.href='{% url 'guardian_profile' %}?next=guardian_dashboard'">Profile</li>
+    <li class="logout-item">
+      <a href="/logout/" onclick="return confirm('Are you sure?');">Logout</a>
+    </li>
+  </ul>
+</aside>
+
+<!-- ================= MAIN ================= -->
+<main class="main">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    
+    <h1>User Activity Monitor</h1>
+    <div class="top-actions">
+      <button id="refreshBtn">Refresh</button>
+    </div>
+  </header>
+
+  <!-- ================= SUMMARY CARDS ================= -->
+  <section class="cards">
+    <div class="card">
+      <h3>Total Connected</h3>
+      <p id="connectedCount">{{ connected_count }}</p>
+    </div>
+
+    <div class="card">
+      <h3>Active Sessions</h3>
+      <p id="sessionsCount">{{ active_sessions }}</p>
+    </div>
+
+    <div class="card">
+      <h3>Monitoring Mode</h3>
+      <p id="monitorMode">{{ monitor_mode }}</p>
+    </div>
+  </section>
+
+  <!-- ================= CONNECTED USERS ================= -->
+  <section class="list">
+    <h2>Connected Users</h2>
+
+    <table id="connectedTable">
+      <thead>
+        <tr>
+          <th>User ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for u in connected_users %}
+        <tr>
+          <td>{{ u.id }}</td>
+          <td>{{ u.username }}</td>
+          <td>{{ u.email }}</td>
+          <td class="status approved">Approved</td>
+          <td><a href="/guardian/user-settings/{{u.id}}/">Settings</a></td>
+          <td><a href="/guardian/user-messages/{{u.id}}/">Messages</a></td>
+          <td><a class="disconnect-btn"href="{% url 'guardian_disconnect_user' u.id %}"  
+            onclick="return confirm('Are you sure you want to disconnect this user?');">   Disconnect</a></td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="empty">No connected users</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<!-- EXISTING JS (animations + modal logic) -->
+<script src="{% static 'js/guardian.js' %}"></script>
+</body>
+</html>

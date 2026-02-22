@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User List</title>
+  <link rel="stylesheet" href="{% static 'css/user_list_styles.css' %}">
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- ================= TOP BAR ================= -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 class="brand">User Directory</h1>
+      <p class="tagline">Clean, modern list — glass card UI</p>
+    </div>
+
+    <div class="topbar-right">
+      <input id="searchInput" class="search" type="search"
+             placeholder="Search name, username, email..." />
+      <a class="back" href="/adminhome/">← Back</a>
+    </div>
+  </header>
+
+  <!-- ================= CONTENT ================= -->
+  <main class="container">
+
+    <section class="controls">
+      <div class="stats">
+        Showing <strong id="count">{{ users|length }}</strong> users
+      </div>
+    </section>
+
+    <!-- ================= TABLE VIEW ================= -->
+    <div class="table-wrap">
+      <table class="user-table">
+        <thead>
+        <tr>
+          <th>Full name</th>
+          <th>Username</th>
+          <th>Age</th>
+          <th>Address</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <th>Gender</th>
+          <th>Health condition</th>
+          <th>Image</th>
+          <th>Action</th>
+          <th>Status</th>
+        </tr>
+        </thead>
+
+        <tbody id="userTbody">
+        {% for user in users %}
+        <tr class="user-row">
+
+          <td>{{ user.fullname }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.age }}</td>
+          <td>{{ user.address }}</td>
+          <td>{{ user.phone }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.get_gender_display }}</td>
+          <td>{{ user.health_condition|default:"—" }}</td>
+
+          <td class="avatar-col">
+            {% if user.image %}
+              <img class="avatar" src="{{ user.image.url }}" alt="{{ user.username }}">
+            {% else %}
+              <img class="avatar" src="{% static 'images/profile icon.jpg' %}" alt="No avatar">
+            {% endif %}
+          </td>
+
+          <td>
+            
+            <a href="{% url 'deleteuser' user.id %}" class="btn btn-delete"
+            onclick="return confirm('Are you sure you want to Delete this user?')">Delete</a>
+          </td>
+
+          <td class="status-{{ user.status|lower }}">
+            {{ user.get_status_display }}
+          </td>
+
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ================= CARD VIEW (MOBILE) ================= -->
+    <div id="cardList" class="card-list">
+      {% for user in users %}
+      <article class="card user-card">
+
+        <div class="card-left">
+          <div class="profile-pic-small">
+            {% if user.image %}
+              <img src="{{ user.image.url }}" alt="{{ user.username }}">
+            {% else %}
+              <img src="{% static 'images/profile icon.jpg' %}" alt="placeholder">
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="card-body">
+
+          <div class="card-head">
+            <div class="card-name">{{ user.fullname }}</div>
+            <div class="card-username">@{{ user.username }}</div>
+          </div>
+
+          <div class="card-meta">
+            <div><strong>Age:</strong> {{ user.age }}</div>
+            <div><strong>Gender:</strong> {{ user.get_gender_display }}</div>
+            <div><strong>Health Condition:</strong> {{ user.health_condition|default:"—" }}</div>
+            <div><strong>Address:</strong> {{ user.address }}</div>
+            <div>{{ user.phone }} • {{ user.email }}</div>
+          </div>
+
+          <div class="card-actions">
+          
+            <a class="btn btn-delete" href="{% url 'deleteuser' user.id %}"
+            onclick="return confirm('Are you sure you want to Delete this user?')">Delete</a>
+          </div>
+
+          <div class="status-{{ user.status|lower }}">
+            <strong>Status:</strong> {{ user.get_status_display }}
+          </div>
+
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    <small>Made with ♥ — Your App</small>
+  </footer>
+
+</div>
+
+<script src="{% static 'js/user_list_scripts.js' %}"></script>
+</body>
+</html>

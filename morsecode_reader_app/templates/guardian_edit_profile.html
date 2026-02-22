@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Edit Admin Profile</title>
+
+  <link rel="stylesheet" href="{% static 'css/profile_edit.css' %}">
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="profile-card">
+
+      <!-- Back -->
+      <a class="back-btn" href="/guardian_profile/">← Back</a>
+
+      <!-- LEFT COLUMN -->
+      <div class="left-col">
+        <div class="profile-pic" aria-hidden="false">
+          {% if guardian.image %}
+            <img id="avatarPreview" src="{{ guardian.image.url }}" alt="{{ guardian.username }} avatar">
+          {% else %}
+            <img id="avatarPreview" src="{% static 'images/profile icon.jpg' %}" alt="avatar placeholder">
+          {% endif %}
+        </div>
+
+        <div class="avatar-meta">
+          <div class="name">{{ guardian.username }}</div>
+          <div class="subtitle">{{ guardian.email }}</div>
+          <a class="edit-icon" href="/guardian_profile/">Cancel</a>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-col">
+        <div class="card-head" role="heading" aria-level="2">
+          <h3>Profile Details</h3>
+          <div class="member-since" aria-hidden="true">
+            Member since: {{ guardian.date_joined|date:"M j, Y" }}
+          </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" id="editProfileForm" novalidate>
+          {% csrf_token %}
+
+          <div class="info-grid">
+            <div class="row">
+              <label for="id_username">User name</label>
+              <input id="id_username" class="input" type="text" name="username" value="{{ guardian.username }}" required>
+            </div>
+
+            <div class="row">
+              <label for="id_fullname">Full name</label>
+              <input id="id_fullname" class="input" type="text" name="fullname" value="{{ guardian.fullname }}">
+            </div>
+
+            <div class="row">
+              <label for="id_age">Age</label>
+              <input id="id_age" class="input" type="number" name="age" value="{{ guardian.age }}">
+            </div>
+
+            <div class="row">
+              <label for="id_phone">Phone</label>
+              <input id="id_phone" class="input" type="text" name="phone" value="{{ guardian.phone }}">
+            </div>
+
+            <div class="row">
+              <label for="id_gender">Gender</label>
+              <select id="id_gender" class="input" name="gender" aria-label="Gender">
+                <option value="" disabled {% if not guardian.gender %}selected{% endif %}>Select</option>
+                <option value="male" {% if guardian.gender == "male" %}selected{% endif %}>Male</option>
+                <option value="female" {% if guardian.gender == "female" %}selected{% endif %}>Female</option>
+                <option value="other" {% if guardian.gender == "other" %}selected{% endif %}>Other</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <label for="id_avatar">Avatar (choose file)</label>
+              <input id="id_avatar" class="input" type="file" name="avatar" accept="image/*" aria-describedby="avatarHelp">
+              <small id="avatarHelp" style="color:rgba(255,255,255,0.6)">PNG/JPG, max 2MB (server limits apply)</small>
+            </div>
+
+
+
+            <div class="row full">
+              <label for="id_address">Address</label>
+              <textarea id="id_address" class="input" name="address" rows="3">{{ guardian.address }}</textarea>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn save-btn" id="saveBtn">Save Changes</button>
+            <button class="btn save-btn" href="/guardian_profile/">Cancel</button>
+          </div>
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="{% static 'js/profile_edit.js' %}"></script>
+</body>
+</html>

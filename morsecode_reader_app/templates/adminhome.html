@@ -1,0 +1,150 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard</title>
+
+<link rel="stylesheet" href="{% static 'css/admin_home.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<!-- ========== SIDEBAR ========== -->
+<aside class="sidebar">
+    <h2 class="logo">Admin</h2>
+
+    <ul class="menu">
+        <li class="active">Dashboard</li>
+        <li onclick="window.location.href='/userlist/'">Users</li>
+        <li onclick="window.location.href='/guardian_list/'">Guardian</li>
+        <li onclick="window.location.href='/feedback/'">Feedbacks</li>
+        <li class="logout-item">
+            <a href="/logout/" onclick="return confirm('Are you sure?');">
+                Logout
+            </a>
+        </li>
+    </ul>
+</aside>
+
+<!-- ========== MAIN CONTENT ========== -->
+<main class="main">
+
+    <h1>Dashboard</h1>
+    <p class="subtitle">System overview & analytics</p>
+
+    <!-- TOP STAT CARDS -->
+    <div class="cards">
+        <div class="card highlight">
+            <h3>Total Users</h3>
+            <p class="count">{{ total_users }}</p>
+        </div>
+
+        <div class="card highlight">
+            <h3>Total Guardians</h3>
+            <p class="count">{{ total_guardians }}</p>
+        </div>
+
+        <div class="card highlight">
+            <h3>Total Feedbacks</h3>
+            <p class="count">{{ total_feedback }}</p>
+        </div>
+
+        <div class="card highlight">
+            <h3>New Requests</h3>
+            <p class="count">{{ pending_requests }}</p>
+        </div>
+    </div>
+
+    <!-- HIGHLIGHT CARD -->
+    <div class="cards secondary">
+        <div class="card big">
+            <h3>Guardian – User Connections</h3>
+            <p class="count">{{ connected_count }}</p>
+            <span class="hint">Approved connections</span>
+        </div>
+    </div>
+
+    <!-- ANALYTICS (SIDE BY SIDE) -->
+    <div class="cards analytics">
+
+        <!-- GRAPH A -->
+        <div class="card">
+            <h3>System Distribution</h3>
+            <canvas id="systemChart" height="220"></canvas>
+        </div>
+
+        <!-- GRAPH B -->
+        <div class="card">
+            <h3>Connection Status</h3>
+            <canvas id="statusChart" height="220"></canvas>
+        </div>
+
+    </div>
+
+</main>
+
+<!-- ========== CHART SCRIPTS ========== -->
+<script>
+/* GRAPH A – System Distribution */
+new Chart(document.getElementById('systemChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Users', 'Guardians', 'New Requests'],
+        datasets: [{
+            data: [
+                {{ total_users }},
+                {{ total_guardians }},
+                {{ pending_requests }}
+            ],
+            backgroundColor: ['#4f9cff', '#22c55e', '#f59e0b'],
+            hoverOffset: 12
+        }]
+    },
+    options: {
+        cutout: '65%',
+        animation: { duration: 1500 },
+        plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+                callbacks: {
+                    label: function(ctx){
+                        const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+                        const p = ((ctx.raw / total) * 100).toFixed(1);
+                        return `${ctx.label}: ${ctx.raw} (${p}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+/* GRAPH B – Connection Status */
+new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Connected', 'Pending', 'Rejected'],
+        datasets: [{
+            data: [
+                {{ connected_count }},
+                {{ pending_requests }},
+                {{ rejected_count }}
+            ],
+            backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+            hoverOffset: 12
+        }]
+    },
+    options: {
+        cutout: '65%',
+        animation: { duration: 1500 },
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+</script>
+
+</body>
+</html>

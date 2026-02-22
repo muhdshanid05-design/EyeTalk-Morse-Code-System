@@ -1,0 +1,216 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>User Home | EyeTalk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background:#0f1724;
+    color:#fff;
+}
+
+.container{
+    padding:30px;
+}
+
+.header{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.header h1{
+    margin:0;
+    color:#66f0ff;
+}
+
+.dashboard{
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    gap:25px;
+}
+
+.card{
+    background:rgba(255,255,255,0.05);
+    border-radius:16px;
+    padding:25px;
+    text-align:center;
+    cursor:pointer;
+    transition:0.3s;
+    border:1px solid rgba(255,255,255,0.1);
+}
+
+.card:hover{
+    transform:scale(1.05);
+    background:rgba(255,255,255,0.1);
+}
+
+.icon{
+    font-size:48px;
+    margin-bottom:15px;
+}
+
+.card h3{
+    margin:10px 0;
+}
+
+.card p{
+    font-size:14px;
+    opacity:0.8;
+}
+
+.logout{
+    margin-top:30px;
+    text-align:center;
+}
+.logout a{
+    color:#ff6b6b;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.back-btn{
+  position:relative;
+  background:#334155;
+  color:#e6eef8;
+
+  padding:6px 12px;          /* 👈 smaller */
+  border:1px solid #475569;
+  border-radius:6px;
+
+  font-size:13px;            /* 👈 smaller text */
+  font-weight:500;
+
+  cursor:pointer;
+  margin:10px 0;
+
+  width:auto;                /* ⭐ IMPORTANT */
+  display:inline-block;      /* ⭐ IMPORTANT */
+}
+
+.back-btn:hover{
+  background:#475569;
+  color:#ffffff;
+}
+</style>
+
+<script src="{% static 'mediapipe/camera_utils.js' %}"></script>
+<script src="{% static 'mediapipe/face_mesh.js' %}"></script>
+
+<script src="{% static 'js/user_dashboard.js' %}" defer></script>
+
+</head>
+
+<body>
+<button class="back-btn" onclick="window.location.href='/home/'">
+  ← Back
+</button>
+<div class="container">
+
+        <!-- Camera Selector -->
+    <select id="cameraSelect"
+            style="
+              position:fixed;
+              bottom:160px;
+              left:20px;
+              z-index:9999;
+              padding:6px;
+              border-radius:6px;
+            ">
+    </select>
+    
+
+
+    <!-- Camera Preview (Eye Detection Status) -->
+    <video id="video"
+           autoplay
+           muted
+           playsinline
+           style="
+             position:fixed;
+             bottom:20px;
+             left:20px;
+             width:160px;
+             height:120px;
+             border-radius:12px;
+             border:2px solid #66f0ff;
+             background:#000;
+             z-index:9999;
+             object-fit:cover;">
+    </video>
+
+
+    <div class="header">
+        <h1>Welcome {{ user.fullname }}</h1>
+        <p>Select an option to continue</p>
+    </div>
+
+    <div class="dashboard">
+
+        <!-- EyeTalk -->
+        <div class="card" onclick="location.href='/eyetalk_prog/'">
+            <div class="icon">👁️</div>
+            <h3>EyeTalk</h3>
+            <p>Communicate using eye movements and Morse code</p>
+        </div>
+
+        <!-- Learning -->
+        <div class="card" onclick="location.href='/eyetalk_learning/'">
+            <div class="icon">📘</div>
+            <h3>EyeTalk Learning</h3>
+            <p>Learn Morse code tutorial</p>
+        </div>
+
+        <!-- Game -->
+        <div class="card" onclick="location.href='/learning_game/'">
+            <div class="icon">🎮</div>
+            <h3>Game</h3>
+            <p>Play Morse learning game</p>
+        </div>
+
+
+        <!-- Settings -->
+        <div class="card" onclick="location.href='/user_settings/'">
+            <div class="icon">⚙️</div>
+            <h3>Settings</h3>
+            <p>Accessibility & control options</p>
+        </div>
+
+        
+
+
+    </div>
+
+    <div class="logout">
+        <a href="/logout/" onclick="return confirm('Logout?')">Logout</a><br>
+    </div>
+
+    <form method="POST" action="/trigger_sos/">
+  {% csrf_token %}
+  <button type="submit" 
+          style="background:#dc2626;color:white;
+                 padding:12px 20px;border:none;
+                 border-radius:10px;margin-top:20px;
+                 font-weight:bold;">
+    🚨 SOS
+  </button>
+</form>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

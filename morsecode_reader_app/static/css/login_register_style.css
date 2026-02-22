@@ -1,0 +1,447 @@
+/* --------------------------------------------------
+   Login / Register Styles (complete)
+   -------------------------------------------------- */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  /* dark blue gradient like profile page */
+  background: linear-gradient(180deg, #0f1724 0%, #071022 60%);
+}
+
+.container {
+  position: relative;
+  width: 750px;
+  height: 550px;
+  /* main accent = cyan */
+  border: 2px solid #76dae6;
+  box-shadow: 0 0 25px rgba(102, 240, 255, 0.7);
+  overflow: hidden;
+}
+
+/* ---------- Form boxes (left = Login, right = Register) ---------- */
+.container .form-box {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+/* Login box (left) */
+.form-box.Login {
+  left: 0;
+  padding: 0 40px;
+}
+
+.form-box.Login .animation {
+  transform: translateX(0%);
+  transition: .7s;
+  opacity: 1;
+  transition-delay: calc(.1s * var(--S));
+}
+
+.container.active .form-box.Login .animation {
+  transform: translateX(-120%);
+  opacity: 0;
+  transition-delay: calc(.1s * var(--D));
+}
+
+/* Register box (right) */
+.form-box.Register {
+  right: 0;
+  padding: 0 60px;
+}
+
+.form-box.Register .animation {
+  transform: translateX(120%);
+  transition: .7s ease;
+  opacity: 0;
+  filter: blur(10px);
+  transition-delay: calc(.1s * var(--S));
+}
+
+.container.active .form-box.Register .animation {
+  transform: translateX(0%);
+  opacity: 1;
+  filter: blur(0px);
+  transition-delay: calc(.1s * var(--li));
+}
+
+/* Headings */
+.form-box h2 {
+  font-size: 32px;
+  text-align: center;
+}
+
+/* ---------- Inputs ---------- */
+.form-box .input-box {
+  position: relative;
+  width: 100%;
+  height: 20px;
+  margin-top: 25px;
+}
+
+/* input boxes */
+.input-box input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #fff;
+  font-weight: 600;
+  border-bottom: 2px solid #fff;
+  padding-right: 3px;
+  transition: .5s;
+}
+
+/* focus / valid state */
+.input-box input:focus,
+.input-box input:valid {
+  border-bottom: 2px solid #76dae6;
+}
+
+/* ----- LABEL ANIMATIONS ----- */
+
+.input-box label {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  font-size: 16px;
+  pointer-events: none;
+  opacity: 1;
+  letter-spacing: 0em;
+  animation: tracking-in-expand 0.6s ease both;
+}
+
+.input-box input:focus ~ label,
+.input-box input:valid ~ label {
+  animation: tracking-out-contract 0.7s cubic-bezier(0.550, 0.085, 0.680, 0.530) forwards;
+}
+
+/* icon (boxicons) */
+.input-box box-icon {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  font-size: 18px;
+  transform: translateY(-50%);
+  color: #fff;
+  transition: .5s;
+}
+
+.input-box input:focus ~ box-icon,
+.input-box input:valid ~ box-icon {
+  color: #76dae6;
+  top: 10px;
+}
+
+/* ---------- Button ---------- */
+.btn {
+  position: relative;
+  width: 100%;
+  height: 45px;
+  background: transparent;
+  border-radius: 40px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  border: 2px solid #76dae6;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn::before {
+  content: "";
+  position: absolute;
+  height: 300%;
+  width: 100%;
+  /* gradient updated to match profile accent colors */
+  background: linear-gradient(#071022, #76dae6, #071022, #9b7bff);
+  top: -100%;
+  left: 0;
+  z-index: -1;
+  transition: .5s;
+}
+
+.btn:hover::before {
+  top: 0;
+  transition: top 0.4s ease;
+}
+
+/* ---------- Links ---------- */
+.regi-link {
+  font-size: 14px;
+  text-align: center;
+  margin: 20px 0 10px;
+}
+
+.regi-link a {
+  text-decoration: none;
+  color: #76dae6;
+  font-weight: 600;
+}
+
+.regi-link a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Info content ---------- */
+.info-content {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.info-content.Login {
+  right: 0;
+  text-align: right;
+  padding: 0 40px 60px 150px;
+}
+
+.info-content.Login .animation {
+  transform: translateX(0);
+  transition: .7s ease;
+  transition-delay: calc(.1s * var(--S));
+  opacity: 1;
+  filter: blur(0px);
+}
+
+.container.active .info-content.Login .animation {
+  transform: translateX(120%);
+  opacity: 0;
+  filter: blur(10px);
+  transition-delay: calc(.1s * var(--D));
+}
+
+.info-content.Register {
+  left: 0;
+  text-align: left;
+  padding: 0 150px 60px 38px;
+  pointer-events: none;
+}
+
+.info-content.Register .animation {
+  transform: translateX(-120%);
+  transition: .7s ease;
+  opacity: 0;
+  filter: blur(10PX);
+  transition-delay: calc(.1s * var(--S));
+}
+
+.container.active .info-content.Register .animation {
+  transform: translateX(0%);
+  opacity: 1;
+  filter: blur(0);
+  transition-delay: calc(.1s * var(--li));
+}
+
+.info-content h2 {
+  text-transform: uppercase;
+  font-size: 36px;
+  line-height: 1.3;
+}
+
+.info-content p {
+  font-size: 16px;
+}
+
+/* ---------- Curved shapes ---------- */
+.container .curved-shape {
+  position: absolute;
+  right: 0;
+  top: -5px;
+  height: 600px;
+  width: 850px;
+  /* gradient updated */
+  background: linear-gradient(45deg, #071022, #76dae6);
+  transform: rotate(10deg) skewY(40deg);
+  transform-origin: bottom right;
+  transition: 1.5s ease;
+  transition-delay: 1.6s;
+}
+
+.container.active .curved-shape {
+  transform: rotate(0deg) skewY(0deg);
+  transition-delay: .5s;
+}
+
+.container .curved-shape2 {
+  position: absolute;
+  left: 180px;
+  top: 100%;
+  height: 700px;
+  width: 950px;
+  background: #050814;
+  border-top: 3px solid #76dae6;
+  transform: rotate(0deg) skewY(0deg);
+  transform-origin: bottom left;
+  transition: 1.5s ease;
+  transition-delay: .5s;
+}
+
+.container.active .curved-shape2 {
+  transform: rotate(-11deg) skewY(-41deg);
+  transition-delay: 1.2s;
+}
+
+/* ---------- Select (Gender) ---------- */
+.input-box select {
+  width: 100%;
+  height: 50px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #fff;
+  font-weight: 600;
+  border-bottom: 2px solid #fff;
+  padding-right: 40px;
+  appearance: none;
+  cursor: pointer;
+  transition: .5s;
+}
+
+.input-box select:focus {
+  border-bottom: 2px solid #76dae6;
+  color: #76dae6;
+}
+
+.input-box select:focus ~ label,
+.input-box select:valid ~ label {
+  animation: tracking-out-contract 0.7s cubic-bezier(0.550, 0.085, 0.680, 0.530) forwards;
+}
+
+.input-box select option {
+  background-color: #050814;
+  color: #fff;
+}
+
+.input-box select::-ms-expand {
+  display: none;
+}
+
+/* ---------- Remember / Forgot ---------- */
+.remember-forgot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  margin-top: 15px;
+}
+
+.remember-forgot label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.remember-forgot input[type="checkbox"] {
+  accent-color: #76dae6;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.remember-forgot a {
+  color: #76dae6;
+  text-decoration: none;
+}
+
+.remember-forgot a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 800px) {
+  .container {
+    width: 92%;
+    height: auto;
+    padding: 20px 0;
+  }
+  .form-box {
+    width: 100%;
+    position: relative;
+    left: 0;
+    right: 0;
+  }
+  .info-content,
+  .container .curved-shape,
+  .container .curved-shape2 {
+    display: none;
+  }
+}
+.message-box {
+  position: absolute;
+  top: 10px;
+  width: 100%;
+  text-align: center;
+  z-index: 10;
+}
+
+.message-box p {
+  display: inline-block;
+  background: #1b2333;
+  border: 1px solid #76dae6;
+  padding: 8px 15px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #76dae6;
+  animation: fadeMessage 3s ease forwards;
+}
+
+
+
+/* =====================================================
+   NEW ANIMISTA LABEL ANIMATIONS
+   ===================================================== */
+
+@keyframes tracking-out-contract {
+  0% { letter-spacing: 0em; opacity: 1; }
+  50% { opacity: 1; }
+  100% { letter-spacing: -0.5em; opacity: 0; }
+}
+
+@keyframes tracking-in-expand {
+  0% { letter-spacing: -0.5em; opacity: 0; }
+  50% { opacity: 1; }
+  100% { letter-spacing: 0em; opacity: 1; }
+}
+
+@keyframes fadeMessage {
+  0% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+forgot-link {
+  font-size: 14px;
+  color: #76dae6;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+forgot-link:hover {
+  text-decoration: underline;
+}
+

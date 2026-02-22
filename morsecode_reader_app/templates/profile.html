@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ user.name }} — Profile</title>
+   <link rel="stylesheet" href="{% static 'css/profile_edit.css' %}">
+</head>
+<body>
+
+  <div class="wrap">
+    <div class="profile-card">
+
+      <!-- Back -->
+      <a class="back-btn" href="/home/">← Back</a>
+
+      <!-- LEFT COLUMN -->
+      <div class="left-col">
+        <div class="profile-pic">
+          <!-- swap below src to: {{ request.user.profile.avatar.url }} if you store avatars -->
+          <img src="{% if user.image %}{{ user.image.url }}{% else %}{% static 'images/profile icon.jpg' %}{% endif %}" alt="Profile Photo">
+        </div>
+
+        <div class="avatar-meta">
+          <div class="name">{{ user.username }}</div>
+          <div class="subtitle">{{ user.email }}</div>
+          <a class="edit-icon" href="/edit_profile/">Edit</a>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-col">
+        <div class="card-head">
+          <h3>Profile Details</h3>
+          <div style="color: rgba(255,255,255,0.65); font-size:13px;">Member since: {{ user.date_joined|date:"M j, Y" }}</div>
+        </div>
+
+        <p class="bio">A little about you — use this space to show a brief personal summary or status. You can edit it from the <strong>Edit</strong> screen.</p>
+
+        <div class="info-grid">
+          <div class="row">
+            <label>Full name</label>
+            <div class="value">{{ user.fullname }}</div>
+          </div>
+
+          <div class="row">
+            <label>Age</label>
+            <div class="value">{{ user.age }}</div>
+          </div>
+
+          <div class="row">
+            <label>Phone</label>
+            <div class="value">{{ user.phone }}</div>
+          </div>
+
+          <div class="row">
+            <label>Gender</label>
+            <div class="value">
+              {% if user.gender == 'male' %}Male
+              {% elif user.gender == 'female' %}Female
+              {% else %}Other
+              {% endif %}
+            </div>
+          </div>
+          <div class="row">
+            <label>Health Condition</label>
+            <div class="value">
+              {{ user.health_condition|default:"Not specified"|title|cut:"_" }}
+            </div>
+          </div>
+          
+          
+          <div class="row">
+            <label>Address</label>
+            <div class="value">{{ user.address }}</div>
+          </div>
+          
+        </div>
+
+        <div class="actions">
+          <a class="btn save-btn"  href="/edit_profile/">Edit Profile </a>
+          <a class="btn save-btn" href="/logout/" onclick="return confirm('Are you sure?');">logout</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <script src="{% static 'js/profile_edit.js' %}"></script>
+</body>
+</html>

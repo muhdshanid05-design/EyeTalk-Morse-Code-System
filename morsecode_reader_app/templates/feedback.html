@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback List</title>
+
+<style>
+/* -------------------- YOUR THEME -------------------- */
+:root{
+  --bg: linear-gradient(180deg, #0f1724 0%, #071022 60%);
+  --card-bg: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.06);
+  --accent: #66f0ff;
+  --accent-2: #9b7bff;
+  --gold: #ffb86b;
+  --muted: rgba(255,255,255,0.75);
+  --glass-blur: 10px;
+  --radius: 18px;
+}
+
+@keyframes bgDrift {
+  0%   { background-position: 0% 0%; }
+  50%  { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: "Inter", sans-serif;
+  background: var(--bg);
+  background-size: 160% 160%;
+  animation: bgDrift 28s ease-in-out infinite alternate;
+  padding: 30px;
+  color: white;
+}
+
+/* -------------------- FEEDBACK PAGE STYLE -------------------- */
+
+h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 28px;
+  color: var(--gold);
+  font-family: "Georgia", serif;
+}
+
+.box {
+  max-width: 650px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* feedback card */
+.feedback {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  animation: fadeSlideIn 0.6s ease-out forwards;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.feedback:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+}
+
+.email {
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.message {
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.5;
+}
+
+.empty {
+  margin-top: 20px;
+  text-align: center;
+  color: var(--muted);
+  padding: 20px;
+  background: rgba(255,255,255,0.05);
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+}
+
+/* simple fade animation */
+@keyframes fadeSlideIn {
+  0% { opacity:0; transform: translateY(20px); }
+  100% { opacity:1; transform: translateY(0); }
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>All Feedback</h2>
+
+<div class="box">
+    {% for feedback in feedbacks %}
+    <div class="feedback">
+        <div class="email">{{ feedback.email }}</div>
+        <div class="message">{{ feedback.message }}</div>
+    </div>
+    {% empty %}
+    <div class="empty">No feedback found.</div>
+    {% endfor %}
+</div>
+
+</body>
+</html>
