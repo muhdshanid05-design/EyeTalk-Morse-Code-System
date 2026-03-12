@@ -353,9 +353,7 @@ Possible applications include:
 Final Year Project
 Assistive Communication System
 
----
-
-[License](#-license)
+# 📜 License
 
 This project is developed for **academic and research purposes**.
 For more details see the [LICENSE](LICENSE) file.
