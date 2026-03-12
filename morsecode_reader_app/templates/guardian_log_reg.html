@@ -44,19 +44,19 @@
                     <button class="btn" type="submit">Login</button>
                 </div>
                 <br>
-                <div>
-                    <a href="{% url 'guardian_forgot_password' %}" class="forgot-link animation" style="--D:2; --S:24">Forgot Password?</a>
-                </div>
+                
                 <br>
                 <div class="regi-link animation" style="--D:4; --S:25">
-                    <p>Don't have an account? <br> 
+                    <a href="{% url 'guardian_forgot_password' %}" class="forgot-link animation" style="--D:2; --S:24">Forgot Password?</a>
+                </div>
+                <div class="regi-link animation" style="--D:4; --S:25">
+                    <p>Don't have an account? <br> <br>
                         <!-- changed href to # for animation -->
                         <a href="#" class="SignUpLink">Sign Up</a>
                     </p>
                 </div>
             </form>
         </div>
-        <br>
 
         <div class="info-content Login">
             <h2 class="animation" style="--D:0; --S:20">WELCOME BACK!</h2>

@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{ user.name }} — Profile</title>
+  <title>{{ guardian.username }} - Profile</title>
   <link rel="stylesheet" href="{% static 'css/profile_edit.css' %}">
 </head>
 <body>
@@ -12,39 +12,26 @@
   <div class="wrap">
     <div class="profile-card">
 
-      <!-- Back -->
-     
-      
-      {% if next_page %}
-          <a class="back-btn" href="{% url next_page %}">← Back</a>
-      {% else %}
-          <a class="back-btn" href="{% url 'guardian_dashboard' %}">← Back</a>
-      {% endif %}
-      
-     
-          
-      <!-- LEFT COLUMN -->
+      <a class="back-btn" href="{{ back_url }}">Back</a>
+
       <div class="left-col">
         <div class="profile-pic">
-          <!-- swap below src to: {{ request.user.profile.avatar.url }} if you store avatars -->
           <img src="{% if guardian.image %}{{ guardian.image.url }}{% else %}{% static 'images/profile icon.jpg' %}{% endif %}" alt="Profile Photo">
         </div>
 
         <div class="avatar-meta">
           <div class="name">{{ guardian.username }}</div>
           <div class="subtitle">{{ guardian.email }}</div>
-          <a class="edit-icon" href="{% url 'guardian_edit_profile' %}?next={{ next_page }}">Edit</a>
+          <a class="edit-icon" href="{% url 'guardian_edit_profile' %}">Edit</a>
         </div>
       </div>
 
-      <!-- RIGHT COLUMN -->
       <div class="right-col">
         <div class="card-head">
           <h3>Profile Details</h3>
-          <div style="color: rgba(255,255,255,0.65); font-size:13px;">Member since: {{ guardian.date_joined|date:"M j, Y" }}</div>
         </div>
 
-        <p class="bio">A little about you — use this space to show a brief personal summary or status. You can edit it from the <strong>Edit</strong> screen.</p>
+        <p class="bio">Review your guardian details here and use Edit when you need to update them.</p>
 
         <div class="info-grid">
           <div class="row">
@@ -65,23 +52,23 @@
           <div class="row">
             <label>Gender</label>
             <div class="value">
-              {% if guardian.gender == 'male' %}Male
-              {% elif guardian.gender == 'female' %}Female
-              {% else %}Other
+              {% if guardian.gender == 'M' %}Male
+              {% elif guardian.gender == 'F' %}Female
+              {% elif guardian.gender == 'O' %}Other
+              {% else %}Not specified
               {% endif %}
             </div>
           </div>
-          
+
           <div class="row full">
             <label>Address</label>
             <div class="value">{{ guardian.address }}</div>
           </div>
-          
         </div>
 
         <div class="actions">
-          <a class="btn save-btn"  href="{% url 'guardian_edit_profile' %}?next={{ next_page }}">Edit Profile </a>
-          <button class="btn save-btn" href="/logout/" onclick="return confirm('Are you sure?');">logout</button>
+          <a class="btn save-btn" href="{% url 'guardian_edit_profile' %}">Edit Profile</a>
+          <a class="btn save-btn" href="{% url 'logout' %}" onclick="return confirm('Are you sure?');">Logout</a>
         </div>
       </div>
 

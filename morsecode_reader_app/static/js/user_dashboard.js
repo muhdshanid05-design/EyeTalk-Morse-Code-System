@@ -116,8 +116,9 @@ faceMesh.onResults(async res=>{
     if(data.blink === "SHORT") nextCard();
     else if(data.blink === "MEDIUM") prevCard();
     else if(data.blink === "LONG") openCard();
-    else if(data.blink === "EXTRA")
-      window.location.href="/home/";
+    else if(data.blink === "EXTRA"){
+      // Do nothing (back navigation disabled)
+    }
   }
 });
 

@@ -6,23 +6,30 @@
 <title>EyeTalk Settings</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" type="text/css" href="{% static 'css/user_settings.css' %}">
+<script src="{% static 'mediapipe/camera_utils.js' %}"></script>
+<script src="{% static 'mediapipe/face_mesh.js' %}"></script>
 </head>
 
 <body>
 
 {% if not guardian_mode %}
-<button class="back-btn" onclick="window.location.href='/user_dashboard/'">
-  ← Back
-</button>
-
+<button class="back-btn" id="backBtn" onclick="window.location.href='/user_dashboard/'">Back</button>
 {% else %}
-
-<button class="back-btn" onclick="window.location.href='/guardian_dashboard/'">
-  ← Back
-</button>
+<button class="back-btn" id="backBtn" onclick="window.location.href='/guardian_dashboard/'">Back</button>
 {% endif %}
+
 <div class="box">
-<h1>⚙️ EyeTalk Settings</h1>
+<h1>EyeTalk Settings</h1>
+
+<div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap; margin-bottom:20px;">
+  <div>
+    <video id="settingsEyeVideo" autoplay muted playsinline style="width:180px; height:130px; border-radius:10px; background:#000;"></video>
+    <div id="eyeControlStatus" style="margin-top:8px;">Eye control ready</div>
+  </div>
+  <div>
+    <div id="autoCalibrationStatus" style="font-size:14px;">Select Auto Calibration to measure blink timings.</div>
+  </div>
+</div>
 
 <label>Short Blink (ms)
 <span class="value" id="shortVal"></span>
@@ -32,35 +39,32 @@
 <label>Medium Blink (ms)
 <span class="value" id="mediumVal"></span>
 </label>
-<input type="range" min="400" max="1000" step="50" id="medium">
+<input type="range" min="500" max="2000" step="50" id="medium">
 
 <label>Long Blink (ms)
 <span class="value" id="longVal"></span>
 </label>
-<input type="range" min="900" max="2000" step="50" id="long">
+<input type="range" min="1000" max="5000" step="50" id="long">
 
 <label>Extra Long Blink (ms)
 <span class="value" id="extraVal"></span>
 </label>
-<input type="range" min="1500" max="3000" step="100" id="extra">
+<input type="range" min="1500" max="6000" step="100" id="extra">
 
 <label>Letter Gap (ms)
 <span class="value" id="pauseVal"></span>
 </label>
-<input type="range" min="800" max="3000" step="100" id="pause">
+<input type="range" min="800" max="5000" step="100" id="pause">
 
 <label>Word Gap (ms)
   <span class="value" id="wordGapVal"></span>
 </label>
-<input type="range" id="wordGap" min="1500" max="4000">
-
-
-
+<input type="range" id="wordGap" min="1500" max="10000">
 
 <label>Blink Sensitivity (EAR)
 <span class="value" id="earVal"></span>
 </label>
-<input type="range" min="0.15" max="0.30" step="0.01" id="ear">
+<input type="range" min="0.15" max="3.0" step="0.05" id="ear">
 
 <div class="toggle">
   <span>Enable Eye Control</span>
@@ -72,19 +76,16 @@
   <input type="checkbox" id="enableSOS">
 </div>
 
-
-
 <div class="toggle">
   <span>Facial Mouse Control</span>
   <input type="checkbox" id="facialMouse">
 </div>
-<button onclick="return confirm('Are you sure?') && saveSettings();">Save Settings</button>
-<button class="reset-btn" onclick="return confirm('Are you sure?') && resetSettings();">Reset</button>
+
+<button id="saveSettingsBtn" data-eye-option="1" onclick="saveSettings();">Save Settings</button>
+<button class="reset-btn" id="resetSettingsBtn" data-eye-option="1" onclick="resetSettings();">Reset</button>
 
 {% if not guardian_mode %}
-<button class="reset-btn" onclick="window.location.href='{% url 'calibration_page' %}'">
-  Auto Calibration
-</button>
+<button class="reset-btn" id="autoCalibrationBtn" data-eye-option="1">Auto Calibration</button>
 {% endif %}
 
 </div>
@@ -92,10 +93,12 @@
 <script>
   const GUARDIAN_MODE = true;
   const TARGET_USER_ID = {{ target_user.id }};
+  const SETTINGS_BACK_URL = "/guardian_dashboard/";
 </script>
 {% else %}
 <script>
   const GUARDIAN_MODE = false;
+  const SETTINGS_BACK_URL = "/user_dashboard/";
 </script>
 {% endif %}
 

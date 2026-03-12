@@ -7,13 +7,14 @@ from django.urls import reverse
 from .import models 
 import json
 import random
+from urllib.parse import urlparse
 
 # Create your views here.
 def home(request):
-    if 'email' not in request.session:
+    if 'user_email' not in request.session:
         return redirect('login')
 
-    user = models.Register.objects.get(email=request.session['email'])
+    user = models.Register.objects.get(email=request.session['user_email'])
     return render(request,'home.html',{'user':user})
 
 def index(request):
@@ -51,7 +52,7 @@ def register(request):
             if from_guardian == "1":
 
                 guardian = models.guardian_register.objects.get(
-                    email=request.session['email']
+                    email=request.session['guardian_email']
                 )
 
                 models.GuardianAccessRequest.objects.create(
@@ -71,13 +72,15 @@ def register(request):
 def login(request):
     if request.method=="POST":
         email=request.POST.get("email")
-        fullname=request.POST.get("fullname")
+       
         password=request.POST.get("password")
         try:
             user=models.Register.objects.get(email=email)
             if user.password==password:
-                request.session["email"]=email
-                return redirect('home')
+                request.session["user_email"]=email
+                if user.profile_completed:
+                    return redirect('home')
+                return redirect('edit_profile')
             return HttpResponse('<script>alert("Invalid password");window.location.href="/login/";<script>')
         except models.Register.DoesNotExist: 
             return HttpResponse('<script>alert("Invalid User");window.location.href="/login/";</script>')
@@ -94,17 +97,19 @@ def logout(request):
     return redirect('index')
 
 def  profile(request):
-    if 'email' in request.session:
-        email = request.session.get('email')
+    if 'user_email' in request.session:
+        email = request.session.get('user_email')
         user = models.Register.objects.get(email=email)
         return render(request,'profile.html',{'user':user})
     return redirect('login')  
 
 def edit_profile(request):
-    if 'email' in request.session:
-        email=request.session.get('email')
+    if 'user_email' in request.session:
+        email=request.session.get('user_email')
         user=models.Register.objects.get(email=email)
         if request.method == 'POST':
+            is_first_profile_completion = not user.profile_completed
+
             user.fullname = request.POST.get('fullname')
             user.username = request.POST.get('username')
             user.age = request.POST.get('age')
@@ -115,7 +120,10 @@ def edit_profile(request):
             if 'avatar' in request.FILES:
                 user.image= request.FILES.get('avatar')
 
+            user.profile_completed = True
             user.save()
+            if is_first_profile_completion:
+                return redirect('home')
             return redirect('profile') 
               
         return render(request,'edit_profile.html',{'user':user}) 
@@ -296,13 +304,15 @@ def guardian_register(request):
 def guardian_login(request):
     if request.method=="POST":
         email=request.POST.get("email")
-        fullname=request.POST.get("fullname")
+      
         password=request.POST.get("password")
         try:
             user=models.guardian_register.objects.get(email=email)
             if user.password==password:
-                request.session["email"]=email
-                return redirect('guardian_home')
+                request.session["guardian_email"]=email
+                if user.profile_completed:
+                    return redirect('guardian_home')
+                return redirect('guardian_edit_profile')
             return HttpResponse('<script>alert("Invalid password");window.location.href="/guardian_login/";<script>')
         except models.guardian_register.DoesNotExist: 
             return HttpResponse('<script>alert("Invalid User");window.location.href="/guardian_login/";</script>')
@@ -311,21 +321,21 @@ def guardian_login(request):
     })
    
 def guardian_home(request):
-    if 'email' not in request.session:
-        return redirect('login')
+    if 'guardian_email' not in request.session:
+        return redirect('guardian_login')
 
-    user = models.guardian_register.objects.get(email=request.session['email'])
+    user = models.guardian_register.objects.get(email=request.session['guardian_email'])
     return render(request,'guardian_home.html',{'guardian':user})
     
     
     
 def guardian_dashboard(request):
-    if 'email' not in request.session:
+    if 'guardian_email' not in request.session:
         return redirect('guardian_login')
 
     # Logged-in guardian
     guardian = models.guardian_register.objects.get(
-        email=request.session['email']
+        email=request.session['guardian_email']
     )
 
     # Guardian approved access requests
@@ -359,11 +369,11 @@ def guardian_dashboard(request):
     
 def guardian_disconnect_user(request, user_id):
 
-    if 'email' not in request.session:
+    if 'guardian_email' not in request.session:
         return redirect('guardian_login')
 
     guardian = models.guardian_register.objects.get(
-        email=request.session['email']
+        email=request.session['guardian_email']
     )
 
     models.GuardianAccessRequest.objects.filter(
@@ -376,28 +386,43 @@ def guardian_disconnect_user(request, user_id):
 
     
 def guardian_profile(request):
-    if 'email' not in request.session:
+    if 'guardian_email' not in request.session:
         return redirect('guardian_login')
 
-    email = request.session.get('email')
+    email = request.session.get('guardian_email')
     user = models.guardian_register.objects.get(email=email)
 
-    next_page = request.GET.get('next')
+    referer = request.META.get('HTTP_REFERER', '')
+    referer_path = urlparse(referer).path if referer else ''
+    guardian_home_path = reverse('guardian_home')
+    guardian_dashboard_path = reverse('guardian_dashboard')
+    guardian_edit_profile_path = reverse('guardian_edit_profile')
+
+    if referer_path in {guardian_home_path, guardian_dashboard_path}:
+        back_url = referer
+        request.session['guardian_profile_back_url'] = back_url
+    elif referer_path == guardian_edit_profile_path:
+        back_url = request.session.get('guardian_profile_back_url', guardian_home_path)
+    else:
+        back_url = request.session.get('guardian_profile_back_url', guardian_home_path)
 
     return render(request, 'guardian_profile.html', {
         'guardian': user,
-        'next_page': next_page
+        'back_url': back_url
     })
 
 
 def guardian_edit_profile(request):
-    if 'email' not in request.session:
+    if 'guardian_email' not in request.session:
         return redirect('guardian_login')
 
-    email = request.session.get('email')
+    email = request.session.get('guardian_email')
     user = models.guardian_register.objects.get(email=email)
 
-    next_page = request.GET.get('next')
+    referer = request.META.get('HTTP_REFERER', '')
+    referer_path = urlparse(referer).path if referer else ''
+    guardian_profile_path = reverse('guardian_profile')
+    back_url = referer if referer_path == guardian_profile_path else guardian_profile_path
 
     if request.method == 'POST':
         user.fullname = request.POST.get('fullname')
@@ -410,17 +435,14 @@ def guardian_edit_profile(request):
         if 'avatar' in request.FILES:
             user.image = request.FILES.get('avatar')
 
+        user.profile_completed = True
         user.save()
 
-        # Preserve next parameter
-        if next_page:
-            return redirect(f"{reverse('guardian_profile')}?next={next_page}")
-
-        return redirect('guardian_profile')
+        return redirect('guardian_home')
 
     return render(request, 'guardian_edit_profile.html', {
         'guardian': user,
-        'next_page': next_page
+        'back_url': back_url
     })
 
 
@@ -444,12 +466,12 @@ def reject_grd(request, id):
 
 def grd_view_userlist(request):
     # Guardian login check
-    if 'email' not in request.session:
+    if 'guardian_email' not in request.session:
         return redirect('guardian_login')
 
     # Logged-in guardian
     guardian = models.guardian_register.objects.get(
-        email=request.session['email']
+        email=request.session['guardian_email']
     )
 
     # All users
@@ -479,11 +501,11 @@ def grd_view_userlist(request):
 
 
 def request_user_access(request, user_id):
-    if 'email' not in request.session:
+    if 'guardian_email' not in request.session:
         return redirect('guardian_login')
 
     guardian = models.guardian_register.objects.get(
-        email=request.session['email']
+        email=request.session['guardian_email']
     )
     user = models.Register.objects.get(id=user_id)
 
@@ -644,9 +666,9 @@ def save_message(request):
             return JsonResponse({'status': 'error', 'error': 'empty'}, status=400)
         device_info = data.get('device_info') or {}
         user = None
-        if 'email' in request.session:
+        if 'user_email' in request.session:
             try:
-                user = models.Register.objects.get(email=request.session['email'])
+                user = models.Register.objects.get(email=request.session['user_email'])
             except models.Register.DoesNotExist:
                 user = None
         msg = models.Message.objects.create(text=text, device_info=device_info, user=user)
@@ -668,10 +690,10 @@ def save_message(request):
     
     
 def user_dashboard(request):
-    if 'email' not in request.session:
+    if 'user_email' not in request.session:
         return redirect('login')
 
-    user = models.Register.objects.get(email=request.session['email'])
+    user = models.Register.objects.get(email=request.session['user_email'])
     return render(request,'user_dashboard.html',{'user':user})
 
 
@@ -681,7 +703,19 @@ def eyetalk_learning(request):
     return render(request,'learning_home.html')
 
 def learning_game(request):
-    return render(request,'learning_game.html')
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user = models.Register.objects.get(email=request.session['user_email'])
+
+    try:
+        high_score = user.game_score.high_score
+    except models.GameHighScore.DoesNotExist:
+        high_score = 0
+
+    return render(request, 'learning_game.html', {
+        'high_score': high_score
+    })
 
 
 
@@ -697,8 +731,8 @@ def learning_game(request):
 # ================================
 
 def user_settings(request):
-    if 'email' not in request.session:
-        return redirect('login')
+    if 'user_email' not in request.session:
+        return redirect('user_login')
 
     return render(request, 'user_settings.html', {
         'guardian_mode': False
@@ -708,10 +742,10 @@ def user_settings(request):
 
 
 def get_settings(request):
-    if "email" not in request.session:
+    if "user_email" not in request.session:
         return JsonResponse({"status": "unauthorized"}, status=401)
 
-    user = models.Register.objects.get(email=request.session["email"])
+    user = models.Register.objects.get(email=request.session["user_email"])
     s, _ = models.UserSettings.objects.get_or_create(user=user)
 
     return JsonResponse({
@@ -733,10 +767,10 @@ def save_settings(request):
     if request.method != "POST":
         return JsonResponse({"status": "invalid"}, status=400)
 
-    if "email" not in request.session:
+    if "user_email" not in request.session:
         return JsonResponse({"status": "unauthorized"}, status=401)
 
-    user = models.Register.objects.get(email=request.session["email"])
+    user = models.Register.objects.get(email=request.session["user_email"])
     s, _ = models.UserSettings.objects.get_or_create(user=user)
 
     data = json.loads(request.body)
@@ -764,10 +798,10 @@ def reset_settings(request):
     if request.method != "POST":
         return JsonResponse({"status": "invalid"}, status=400)
 
-    if "email" not in request.session:
+    if "user_email" not in request.session:
         return JsonResponse({"status": "unauthorized"}, status=401)
 
-    user = models.Register.objects.get(email=request.session["email"])
+    user = models.Register.objects.get(email=request.session["user_email"])
     s, _ = models.UserSettings.objects.get_or_create(user=user)
 
     # Match model defaults
@@ -792,11 +826,11 @@ def reset_settings(request):
 # GUARDIAN → USER SETTINGS CONTROL
 # =========================================
 def guardian_user_settings(request, user_id):
-    if 'email' not in request.session:
+    if 'guardian_email' not in request.session:
         return redirect('guardian_login')
 
     guardian = models.guardian_register.objects.get(
-        email=request.session['email']
+        email=request.session['guardian_email']
     )
 
     access = models.GuardianAccessRequest.objects.filter(
@@ -818,11 +852,11 @@ def guardian_user_settings(request, user_id):
 @csrf_exempt
 def guardian_get_user_settings(request, user_id):
 
-    if 'email' not in request.session:
+    if 'guardian_email' not in request.session:
         return JsonResponse({"status": "unauthorized"}, status=401)
 
     guardian = models.guardian_register.objects.get(
-        email=request.session['email']
+        email=request.session['guardian_email']
     )
 
     access = models.GuardianAccessRequest.objects.filter(
@@ -852,11 +886,11 @@ def guardian_get_user_settings(request, user_id):
 @csrf_exempt
 def guardian_save_user_settings(request, user_id):
 
-    if 'email' not in request.session:
+    if 'guardian_email' not in request.session:
         return JsonResponse({"status": "unauthorized"}, status=401)
 
     guardian = models.guardian_register.objects.get(
-        email=request.session['email']
+        email=request.session['guardian_email']
     )
 
     access = models.GuardianAccessRequest.objects.filter(
@@ -897,11 +931,11 @@ def guardian_reset_settings(request, user_id):
     if request.method != "POST":
         return JsonResponse({"status": "invalid"}, status=400)
 
-    if "email" not in request.session:
+    if "guardian_email" not in request.session:
         return JsonResponse({"status": "unauthorized"}, status=401)
 
     guardian = models.guardian_register.objects.get(
-        email=request.session["email"]
+        email=request.session["guardian_email"]
     )
 
     access = models.GuardianAccessRequest.objects.filter(
@@ -952,13 +986,18 @@ def api_blink(request):
     if request.method != "POST":
         return JsonResponse({"error": "invalid method"}, status=400)
 
-    if 'email' not in request.session:
+    if 'user_email' not in request.session:
         return JsonResponse({"error": "not logged in"}, status=401)
 
-    user = models.Register.objects.get(email=request.session['email'])
+    user = models.Register.objects.get(email=request.session['user_email'])
     settings = models.UserSettings.objects.get(user=user)
 
-    data = json.loads(request.body)
+    # SAFE JSON PARSE
+    try:
+        data = json.loads(request.body) if request.body else {}
+    except:
+        data = {}
+
     duration = int(data.get("duration", 0))
 
     blink_type = classify_blink(duration, settings)
@@ -1087,7 +1126,7 @@ Please respond immediately.
 
 
 def calibration_page(request):
-    if 'email' not in request.session:
+    if 'user_email' not in request.session:
         return redirect('login')
     return render(request, 'calibration.html')
 
@@ -1103,11 +1142,11 @@ def calibration_page(request):
 
 def guardian_view_user_messages(request, user_id):
 
-    if 'email' not in request.session:
+    if 'guardian_email' not in request.session:
         return redirect('guardian_login')
 
     guardian = models.guardian_register.objects.get(
-        email=request.session['email']
+        email=request.session['guardian_email']
     )
 
     # CHECK APPROVED CONNECTION
@@ -1143,11 +1182,11 @@ def guardian_view_user_messages(request, user_id):
 
 def guardian_delete_message(request, message_id):
 
-    if 'email' not in request.session:
+    if 'guardian_email' not in request.session:
         return redirect('guardian_login')
 
     guardian = models.guardian_register.objects.get(
-        email=request.session['email']
+        email=request.session['guardian_email']
     )
 
     message = models.Message.objects.get(id=message_id)
@@ -1175,10 +1214,10 @@ def save_game_score(request):
     if request.method != "POST":
         return JsonResponse({"status": "invalid"}, status=400)
 
-    if "email" not in request.session:
+    if "user_email" not in request.session:
         return JsonResponse({"status": "unauthorized"}, status=401)
 
-    user = models.Register.objects.get(email=request.session["email"])
+    user = models.Register.objects.get(email=request.session["user_email"])
     data = json.loads(request.body)
     new_score = int(data.get("score", 0))
 
@@ -1323,3 +1362,22 @@ def common_forgot_password(request):
 
     return render(request, "forgot_password.html", {"step": step})
 
+
+
+
+
+
+
+
+
+
+def eye_keyboard(request):
+
+    if 'user_email' not in request.session:
+        return redirect('login')
+
+    user = models.Register.objects.get(email=request.session['user_email'])
+
+    return render(request,'eye_keyboard.html',{
+        'user':user
+    })

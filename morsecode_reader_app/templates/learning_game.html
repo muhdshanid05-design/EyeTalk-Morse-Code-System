@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>EyeTalk – Learning & Practice</title>
+<title>EyeTalk Learning Game</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -27,19 +27,17 @@ video{width:100%;background:black;border-radius:10px;margin-top:10px}
 
 <body>
 
-<button class="back-btn" onclick="window.location.href='/user_dashboard/'">
-  ← Back
-</button>
+<button class="back-btn" onclick="window.location.href='/user_dashboard/'">Back</button>
 
 <div class="wrapper">
 
 <div class="camera">
-<h2>🎥 Camera</h2>
+<h2>Camera</h2>
 <video id="video" autoplay muted playsinline></video>
 </div>
 
 <div class="game">
-<h1>👁️ EyeTalk – Learning & Practice</h1>
+<h1>EyeTalk Learning Game</h1>
 
 <div class="word" id="displayText">A</div>
 
@@ -48,13 +46,13 @@ Expected Morse: <span class="expected" id="expectedMorse">.-</span>
 </div>
 
 <div class="morse">
-Your Morse: <span id="userMorse">–</span>
+Your Morse: <span id="userMorse">-</span>
 </div>
 
 <div class="status" id="status">Initializing...</div>
 
 <div class="score">
-High Score: <span id="highScore">0</span>
+High Score: <span id="highScore">{{ high_score|default:0 }}</span>
 </div>
 <div class="score">
 Score: <span id="score">0</span>
@@ -67,165 +65,208 @@ Score: <span id="score">0</span>
 <script src="{% static 'mediapipe/face_mesh.js' %}"></script>
 
 <script>
+const DASHBOARD_URL = "/user_dashboard/";
+const MIN_BLINK_MS = 100;
+const BLINK_COOLDOWN_MS = 250;
+
 let EAR_THRESHOLD = 0.22;
 let buffer = [];
 let score = 0;
 let blinkActive = false;
 let blinkStart = 0;
+let lastProcessedBlinkAt = 0;
+let faceMissingAnnounced = false;
 
-const LEFT=[33,160,158,133,153,144];
-const RIGHT=[263,387,385,362,380,373];
+const LEFT = [33,160,158,133,153,144];
+const RIGHT = [263,387,385,362,380,373];
+const statusBox = document.getElementById("status");
+const userMorse = document.getElementById("userMorse");
 
-async function loadSettings(){
- const res = await fetch("/api/get-settings/");
- const data = await res.json();
- EAR_THRESHOLD = data.ear;
+async function loadSettings() {
+  const res = await fetch("/api/get-settings/");
+  const data = await res.json();
+  EAR_THRESHOLD = data.ear;
 }
 
-function ear(lm,idx){
- const d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
- const p=idx.map(i=>lm[i]);
- return (d(p[1],p[5])+d(p[2],p[4]))/
-        (2*d(p[0],p[3])+1e-6);
+function setStatus(text) {
+  statusBox.innerText = text;
 }
 
-function nextLetter(){
- const L="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
- const letter=L[Math.floor(Math.random()*26)];
- document.getElementById("displayText").innerText=letter;
- document.getElementById("expectedMorse").innerText=letterToMorse(letter);
- buffer=[];
- document.getElementById("userMorse").innerText="–";
+function speak(text) {
+  if (!window.speechSynthesis || !text) return;
+  speechSynthesis.cancel();
+  const speech = new SpeechSynthesisUtterance(text);
+  speechSynthesis.speak(speech);
 }
 
-function letterToMorse(l){
- const map={
- "A":".-","B":"-...","C":"-.-.","D":"-..","E":".",
- "F":"..-.","G":"--.","H":"....","I":"..","J":".---",
- "K":"-.-","L":".-..","M":"--","N":"-.","O":"---",
- "P":".--.","Q":"--.-","R":".-.","S":"...","T":"-",
- "U":"..-","V":"...-","W":".--","X":"-..-","Y":"-.--","Z":"--.."
- };
- return map[l];
+function announceStatus(text) {
+  setStatus(text);
+  speak(text);
 }
 
-async function handleBlink(duration){
-
- const res = await fetch("/api/blink/",{
-   method:"POST",
-   headers:{ "Content-Type":"application/json" },
-   body:JSON.stringify({ duration })
- });
-
- const data = await res.json();
-
- if(data.blink==="SHORT") buffer.push(".");
- else if(data.blink==="MEDIUM") buffer.push("-");
- else if(data.blink==="EXTRA"){
-   buffer=[];
-   document.getElementById("userMorse").innerText="–";
-   return;
- }
-
- document.getElementById("userMorse").innerText=buffer.join("");
-
- checkAnswer();
+function ear(lm, idx) {
+  const d = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const p = idx.map((i) => lm[i]);
+  return (d(p[1], p[5]) + d(p[2], p[4])) / (2 * d(p[0], p[3]) + 1e-6);
 }
 
-async function checkAnswer(){
+function nextLetter() {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const letter = letters[Math.floor(Math.random() * 26)];
+  document.getElementById("displayText").innerText = letter;
+  document.getElementById("expectedMorse").innerText = letterToMorse(letter);
+  buffer = [];
+  userMorse.innerText = "-";
+  speak(`Type letter ${letter}`);
+}
 
+function letterToMorse(letter) {
+  const map = {
+    "A":".-","B":"-...","C":"-.-.","D":"-..","E":".",
+    "F":"..-.","G":"--.","H":"....","I":"..","J":".---",
+    "K":"-.-","L":".-..","M":"--","N":"-.","O":"---",
+    "P":".--.","Q":"--.-","R":".-.","S":"...","T":"-",
+    "U":"..-","V":"...-","W":".--","X":"-..-","Y":"-.--","Z":"--.."
+  };
+  return map[letter];
+}
+
+function resetWord() {
+  buffer = [];
+  userMorse.innerText = "-";
+  announceStatus("Wrong pattern, try again");
+}
+
+async function handleBlink(duration) {
+  const now = performance.now();
+
+  if (duration < MIN_BLINK_MS) {
+    return;
+  }
+
+  if (now - lastProcessedBlinkAt < BLINK_COOLDOWN_MS) {
+    return;
+  }
+
+  lastProcessedBlinkAt = now;
+
+  const res = await fetch("/api/blink/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ duration })
+  });
+
+  const data = await res.json();
+  if (!data.blink) return;
+
+  if (data.blink === "EXTRA") {
+    announceStatus("Extra long blink detected");
+    setTimeout(() => {
+      window.location.href = DASHBOARD_URL;
+    }, 350);
+    return;
+  }
+
+  if (data.blink === "SHORT") {
+    announceStatus("Short blink detected");
+    buffer.push(".");
+    userMorse.innerText = buffer.join("");
+    announceStatus("Dot entered");
+  } else if (data.blink === "MEDIUM") {
+    announceStatus("Medium blink detected");
+    buffer.push("-");
+    userMorse.innerText = buffer.join("");
+    announceStatus("Dash entered");
+  } else {
+    return;
+  }
+
+  checkAnswer();
+}
+
+async function checkAnswer() {
   const expected = document.getElementById("expectedMorse").innerText;
   const userInput = buffer.join("");
 
-  if(userInput === expected){
-
-    // Increase current score
-    score++;
-    document.getElementById("score").innerText = score;
-
-    // Show success message
-    document.getElementById("status").innerText = "Correct ✅";
-
-    // 🔥 Save high score in database
-    try{
-      const res = await fetch("/api/save-game-score/",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({ score: score })
-      });
-
-      const data = await res.json();
-
-      if(data.high_score !== undefined){
-        document.getElementById("highScore").innerText = data.high_score;
-      }
-
-    }catch(error){
-      console.log("High score save error:", error);
-    }
-
-    // Wait 800ms before next letter (better UX)
-    setTimeout(()=>{
-      nextLetter();
-      document.getElementById("status").innerText = "Next Letter...";
-    }, 800);
-
+  if (!expected.startsWith(userInput)) {
+    resetWord();
+    return;
   }
+
+  if (userInput !== expected) {
+    return;
+  }
+
+  score += 1;
+  document.getElementById("score").innerText = score;
+  announceStatus("Well done");
+
+  try {
+    const res = await fetch("/api/save-game-score/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ score })
+    });
+
+    const data = await res.json();
+    if (data.high_score !== undefined) {
+      document.getElementById("highScore").innerText = data.high_score;
+    }
+  } catch (error) {
+    console.log("High score save error:", error);
+  }
+
+  setTimeout(() => {
+    nextLetter();
+    announceStatus("Next letter");
+  }, 800);
 }
 
-const faceMesh=new FaceMesh({
- locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`
+const faceMesh = new FaceMesh({
+  locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`
 });
 
-faceMesh.setOptions({maxNumFaces:1,refineLandmarks:true});
+faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true });
 
-faceMesh.onResults(res=>{
- if(!res.multiFaceLandmarks) return;
+faceMesh.onResults((res) => {
+  if (!res.multiFaceLandmarks || !res.multiFaceLandmarks.length) {
+    if (!faceMissingAnnounced) {
+      faceMissingAnnounced = true;
+      announceStatus("Please face the camera");
+    }
+    blinkActive = false;
+    return;
+  }
 
- const lm=res.multiFaceLandmarks[0];
- const v=(ear(lm,LEFT)+ear(lm,RIGHT))/2;
- const now=performance.now();
+  faceMissingAnnounced = false;
 
- if(v<EAR_THRESHOLD&&!blinkActive){
-   blinkActive=true;
-   blinkStart=now;
- }
+  const lm = res.multiFaceLandmarks[0];
+  const earValue = (ear(lm, LEFT) + ear(lm, RIGHT)) / 2;
+  const now = performance.now();
 
- if(v>=EAR_THRESHOLD&&blinkActive){
-   blinkActive=false;
-   const duration=Math.round(now-blinkStart);
-   handleBlink(duration);
- }
+  if (earValue < EAR_THRESHOLD && !blinkActive) {
+    blinkActive = true;
+    blinkStart = now;
+  }
+
+  if (earValue >= EAR_THRESHOLD && blinkActive) {
+    blinkActive = false;
+    const duration = Math.round(now - blinkStart);
+    handleBlink(duration);
+  }
 });
 
-const camera=new Camera(document.getElementById("video"),{
- onFrame:async()=>faceMesh.send({image:video})
+const video = document.getElementById("video");
+const camera = new Camera(video, {
+  onFrame: async () => faceMesh.send({ image: video })
 });
 camera.start();
 
-window.onload=async()=>{
- await loadSettings();
- nextLetter();
+window.onload = async () => {
+  await loadSettings();
+  announceStatus("Learning game started");
+  nextLetter();
 };
-
-
-
-async function saveHighScore(){
-   const res = await fetch("/api/save-game-score/",{
-     method:"POST",
-     headers:{ "Content-Type":"application/json" },
-     body:JSON.stringify({ score })
-   });
-
-   const data = await res.json();
-
-   document.getElementById("highScore").innerText = data.high_score;
-}
-
-
-
 </script>
 
 </body>

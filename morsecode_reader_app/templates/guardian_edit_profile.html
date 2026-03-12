@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Edit Admin Profile</title>
+  <title>Edit Guardian Profile</title>
 
   <link rel="stylesheet" href="{% static 'css/profile_edit.css' %}">
 </head>
@@ -13,10 +13,8 @@
   <div class="wrap">
     <div class="profile-card">
 
-      <!-- Back -->
-      <a class="back-btn" href="/guardian_profile/">← Back</a>
+      <a class="back-btn" href="{{ back_url }}">Back</a>
 
-      <!-- LEFT COLUMN -->
       <div class="left-col">
         <div class="profile-pic" aria-hidden="false">
           {% if guardian.image %}
@@ -29,17 +27,13 @@
         <div class="avatar-meta">
           <div class="name">{{ guardian.username }}</div>
           <div class="subtitle">{{ guardian.email }}</div>
-          <a class="edit-icon" href="/guardian_profile/">Cancel</a>
+          <a class="edit-icon" href="{% url 'guardian_profile' %}">Cancel</a>
         </div>
       </div>
 
-      <!-- RIGHT COLUMN -->
       <div class="right-col">
         <div class="card-head" role="heading" aria-level="2">
           <h3>Profile Details</h3>
-          <div class="member-since" aria-hidden="true">
-            Member since: {{ guardian.date_joined|date:"M j, Y" }}
-          </div>
         </div>
 
         <form method="post" enctype="multipart/form-data" id="editProfileForm" novalidate>
@@ -70,19 +64,16 @@
               <label for="id_gender">Gender</label>
               <select id="id_gender" class="input" name="gender" aria-label="Gender">
                 <option value="" disabled {% if not guardian.gender %}selected{% endif %}>Select</option>
-                <option value="male" {% if guardian.gender == "male" %}selected{% endif %}>Male</option>
-                <option value="female" {% if guardian.gender == "female" %}selected{% endif %}>Female</option>
-                <option value="other" {% if guardian.gender == "other" %}selected{% endif %}>Other</option>
+                <option value="M" {% if guardian.gender == "M" %}selected{% endif %}>Male</option>
+                <option value="F" {% if guardian.gender == "F" %}selected{% endif %}>Female</option>
+                <option value="O" {% if guardian.gender == "O" %}selected{% endif %}>Other</option>
               </select>
             </div>
 
             <div class="row">
-              <label for="id_avatar">Avatar (choose file)</label>
-              <input id="id_avatar" class="input" type="file" name="avatar" accept="image/*" aria-describedby="avatarHelp">
-              <small id="avatarHelp" style="color:rgba(255,255,255,0.6)">PNG/JPG, max 2MB (server limits apply)</small>
+              <label for="id_avatar">Avatar</label>
+              <input id="id_avatar" class="input" type="file" name="avatar" accept="image/*">
             </div>
-
-
 
             <div class="row full">
               <label for="id_address">Address</label>
@@ -92,7 +83,7 @@
 
           <div class="actions">
             <button type="submit" class="btn save-btn" id="saveBtn">Save Changes</button>
-            <button class="btn save-btn" href="/guardian_profile/">Cancel</button>
+            <a class="btn save-btn" href="{% url 'guardian_profile' %}">Cancel</a>
           </div>
         </form>
 

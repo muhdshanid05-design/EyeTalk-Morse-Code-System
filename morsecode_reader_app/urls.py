@@ -89,7 +89,7 @@ urlpatterns =[
     path('guardian-forgot-password/', views.guardian_forgot_password, name='guardian_forgot_password'),
 
 
-
+    path('eye_keyboard/', views.eye_keyboard, name='eye_keyboard'),
 
 
 ]

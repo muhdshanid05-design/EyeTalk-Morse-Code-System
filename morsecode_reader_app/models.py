@@ -33,6 +33,7 @@ class Register(models.Model):
     ('other', 'Other'),
     ]
     health_condition = models.CharField(max_length=30,choices=HEALTH_CONDITION_CHOICES,null=True,blank=True)
+    profile_completed = models.BooleanField(default=False)
 
 class Feedback(models.Model):
     username=models.TextField(null=True, blank=True,)
@@ -62,6 +63,7 @@ class guardian_register(models.Model):
         ('rejected', 'Rejected'),
     ]
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    profile_completed = models.BooleanField(default=False)
 
 
 class GuardianAccessRequest(models.Model):

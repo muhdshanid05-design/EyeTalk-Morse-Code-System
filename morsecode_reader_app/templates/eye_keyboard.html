@@ -1,0 +1,381 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<title>EyeTalk Keyboard</title>
+
+<script src="{% static 'mediapipe/camera_utils.js' %}"></script>
+<script src="{% static 'mediapipe/face_mesh.js' %}"></script>
+
+<style>
+body{
+background:linear-gradient(135deg,#071022,#0f1724);
+font-family:Arial;
+color:white;
+text-align:center;
+}
+
+h1{
+color:#66f0ff;
+margin-top:20px;
+}
+
+#camera{
+border-radius:10px;
+margin-top:10px;
+}
+
+#status{
+margin:12px auto;
+font-size:16px;
+color:#dbeafe;
+}
+
+#output{
+width:80%;
+height:70px;
+font-size:28px;
+margin:20px;
+padding:10px;
+border-radius:10px;
+border:none;
+}
+
+.keyboard{
+display:grid;
+grid-template-columns:repeat(6,1fr);
+gap:10px;
+width:80%;
+margin:auto;
+}
+
+.key{
+padding:20px;
+background:#1c2333;
+border-radius:10px;
+font-size:20px;
+}
+
+.active{
+background:#66f0ff;
+color:black;
+transform:scale(1.1);
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>EyeTalk Communication Keyboard</h1>
+
+<video id="camera" width="320" height="240" autoplay muted playsinline></video>
+<div id="status">Ready</div>
+
+<input id="output" readonly placeholder="Text will appear here">
+
+<div class="keyboard" id="keyboard"></div>
+
+<script>
+const DASHBOARD_URL = "/user_dashboard/";
+const MIN_BLINK_MS = 100;
+const DOUBLE_SHORT_GAP_MS = 450;
+const BLINK_COOLDOWN_MS = 250;
+
+const letters = [
+  "A","B","C","D","E","F",
+  "G","H","I","J","K","L",
+  "M","N","O","P","Q","R",
+  "S","T","U","V","W","X",
+  "Y","Z",
+  "SPACE","DELETE","SEND","CLEAR"
+];
+
+const keyboard = document.getElementById("keyboard");
+const output = document.getElementById("output");
+const statusBox = document.getElementById("status");
+
+letters.forEach((letter) => {
+  const key = document.createElement("div");
+  key.className = "key";
+  key.innerText = letter;
+  keyboard.appendChild(key);
+});
+
+const keys = document.querySelectorAll(".key");
+let index = 0;
+let blinkActive = false;
+let blinkStart = 0;
+let EAR_THRESHOLD = 0.22;
+let shortBlinkCount = 0;
+let shortBlinkTimer = null;
+let lastProcessedBlinkAt = 0;
+let faceMissingAnnounced = false;
+
+const LEFT_EYE = [33,160,158,133,153,144];
+const RIGHT_EYE = [263,387,385,362,380,373];
+
+function setStatus(text) {
+  statusBox.textContent = text;
+}
+
+function speak(text) {
+  if (!window.speechSynthesis || !text) return;
+  speechSynthesis.cancel();
+  const speech = new SpeechSynthesisUtterance(text);
+  speechSynthesis.speak(speech);
+}
+
+function announceStatus(text) {
+  setStatus(text);
+  speak(text);
+}
+
+function getCsrfToken() {
+  const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : "";
+}
+
+async function loadSettings() {
+  const res = await fetch("/api/get-settings/");
+  const data = await res.json();
+  EAR_THRESHOLD = data.ear;
+}
+
+function highlight() {
+  keys.forEach((key) => key.classList.remove("active"));
+  keys[index].classList.add("active");
+}
+
+function moveRight() {
+  index = (index + 1) % keys.length;
+  highlight();
+  announceStatus(`Selected ${keys[index].innerText}`);
+}
+
+function moveLeft() {
+  index = (index - 1 + keys.length) % keys.length;
+  highlight();
+  announceStatus(`Selected ${keys[index].innerText}`);
+}
+
+function moveUp() {
+  index = (index - 6 + keys.length) % keys.length;
+  highlight();
+  announceStatus(`Selected ${keys[index].innerText}`);
+}
+
+function moveDown() {
+  index = (index + 6) % keys.length;
+  highlight();
+  announceStatus(`Selected ${keys[index].innerText}`);
+}
+
+function selectKey() {
+  const selected = keys[index].innerText;
+  announceStatus(`Activated ${selected}`);
+
+  if (selected === "SPACE") {
+    output.value += " ";
+    return;
+  }
+
+  if (selected === "DELETE") {
+    output.value = output.value.slice(0, -1);
+    return;
+  }
+
+  if (selected === "SEND") {
+    sendMessage();
+    return;
+  }
+
+  if (selected === "CLEAR") {
+    output.value = "";
+    return;
+  }
+
+  output.value += selected;
+}
+
+function queueShortBlinkAction() {
+  shortBlinkCount++;
+  announceStatus(`Blink detected: ${shortBlinkCount}`);
+
+  if (shortBlinkTimer) clearTimeout(shortBlinkTimer);
+
+  shortBlinkTimer = setTimeout(() => {
+    if (shortBlinkCount === 1) {
+      moveRight();
+      announceStatus("Move Right");
+    } else if (shortBlinkCount === 2) {
+      moveLeft();
+      announceStatus("Move Left");
+    } else if (shortBlinkCount === 3) {
+      moveUp();
+      announceStatus("Move Up");
+    } else if (shortBlinkCount === 4) {
+      moveDown();
+      announceStatus("Move Down");
+    }
+
+    shortBlinkCount = 0;
+  }, DOUBLE_SHORT_GAP_MS);
+}
+
+async function handleBlink(duration) {
+  const now = performance.now();
+
+  if (duration < MIN_BLINK_MS) {
+    return;
+  }
+
+  if (now - lastProcessedBlinkAt < BLINK_COOLDOWN_MS) {
+    return;
+  }
+
+  lastProcessedBlinkAt = now;
+
+  const response = await fetch("/api/blink/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ duration })
+  });
+
+  const data = await response.json();
+  if (!data.blink) return;
+  
+  if (data.blink === "EXTRA") {
+    announceStatus("Extra long blink detected");
+
+    try {
+      await fetch("/eyetalk/exit-save/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken()
+        },
+        body: JSON.stringify({
+          text: output.value,
+          device_info: { source: "eye_keyboard_exit" }
+        })
+      });
+    } catch (e) {
+      console.log("Exit save failed");
+    }
+
+    setTimeout(() => {
+      window.location.href = DASHBOARD_URL;
+    }, 350);
+
+    return;
+  }
+
+  if (data.blink === "SHORT") {
+    announceStatus("Short blink detected");
+    queueShortBlinkAction();
+    return;
+  }
+
+  if (data.blink === "LONG") {
+    announceStatus("Long blink detected");
+    selectKey();
+  }
+}
+
+function ear(lm, idx) {
+  const d = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const p = idx.map((i) => lm[i]);
+  return (d(p[1], p[5]) + d(p[2], p[4])) / (2 * d(p[0], p[3]) + 1e-6);
+}
+
+const faceMesh = new FaceMesh({
+  locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`
+});
+
+faceMesh.setOptions({
+  maxNumFaces: 1,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
+});
+
+faceMesh.onResults(async (res) => {
+  if (!res.multiFaceLandmarks || !res.multiFaceLandmarks.length) {
+    if (!faceMissingAnnounced) {
+      faceMissingAnnounced = true;
+      announceStatus("Please face the camera");
+    }
+    blinkActive = false;
+    return;
+  }
+
+  faceMissingAnnounced = false;
+
+  const lm = res.multiFaceLandmarks[0];
+  const earValue = (ear(lm, LEFT_EYE) + ear(lm, RIGHT_EYE)) / 2;
+  const now = performance.now();
+
+  if (earValue < EAR_THRESHOLD && !blinkActive) {
+    blinkActive = true;
+    blinkStart = now;
+  }
+
+  if (earValue >= EAR_THRESHOLD && blinkActive) {
+    blinkActive = false;
+    const duration = Math.round(now - blinkStart);
+    await handleBlink(duration);
+  }
+});
+
+async function sendMessage() {
+  const text = output.value.trim();
+  if (!text) return;
+
+  try {
+    const res = await fetch("/eyetalk/save/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCsrfToken()
+      },
+      body: JSON.stringify({
+        text,
+        device_info: { source: "eye_keyboard" }
+      })
+    });
+
+    const data = await res.json();
+    if (data.status === "ok") {
+      output.value = "";
+      announceStatus("Message sent");
+    }
+  } catch (e) {
+    announceStatus("Send failed");
+  }
+}
+
+async function startCamera() {
+  await loadSettings();
+
+  const video = document.getElementById("camera");
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  video.srcObject = stream;
+
+  const camera = new Camera(video, {
+    onFrame: async () => {
+      await faceMesh.send({ image: video });
+    },
+    width: 320,
+    height: 240
+  });
+
+  highlight();
+  camera.start();
+}
+
+window.onload = startCamera;
+</script>
+
+</body>
+</html>
