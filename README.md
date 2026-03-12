@@ -348,7 +348,7 @@ Possible applications include:
 
 # 👨‍💻 Developer
 
-**Muhammad Shanid**
+**Muhammed Shanid**
 
 Final Year Project
 Assistive Communication System
