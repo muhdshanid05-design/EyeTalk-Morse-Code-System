@@ -1,5 +1,6 @@
 from django.contrib import messages
 from urllib import request
+from django.conf import settings
 from django.shortcuts import render,redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
@@ -138,10 +139,7 @@ def admin_login(request):
         username = request.POST.get('email')
         password = request.POST.get('password')
 
-        ADMIN_USERNAME = "admin@gmail.com"
-        ADMIN_PASSWORD = "admin123"
-
-        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        if username == settings.ADMIN_USERNAME and password == settings.ADMIN_PASSWORD:
             request.session['admin'] = "admin@gmail.com"
             return redirect('adminhome')
         else:
@@ -1056,7 +1054,7 @@ def trigger_sos(request):
     if request.method == "POST":
 
         # Get logged-in user email from session
-        email = request.session.get("email")
+        email = request.session.get("user_email")
 
         if not email:
             return HttpResponse("User not logged in", status=401)
