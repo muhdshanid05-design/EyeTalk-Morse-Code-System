@@ -140,7 +140,7 @@ def admin_login(request):
         password = request.POST.get('password')
 
         if username == settings.ADMIN_USERNAME and password == settings.ADMIN_PASSWORD:
-            request.session['admin'] = "admin@gmail.com"
+            request.session['admin'] = settings.ADMIN_USERNAME
             return redirect('adminhome')
         else:
             return HttpResponse('<script>alert("Invalid Admin Credentials");window.location.href="/admin_login/";</script>')
