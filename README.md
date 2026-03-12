@@ -358,3 +358,4 @@ Assistive Communication System
 # 📜 License
 
 This project is developed for **academic and research purposes**.
+For more details see the [LICENSE](LICENSE) file.
